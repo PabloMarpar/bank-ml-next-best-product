@@ -65,17 +65,60 @@ de 1.54. **Los 0.8864 / 0.8826 de la tabla de abajo son con UN canal.** Los nuev
 no son comparables uno a uno con los viejos: cambian a la vez el nº de canales, el mes de
 entrenamiento que se pierde y el early stopping.
 
-### Tanda en ejecución: `scripts/cuarta_tanda.sh` (segundo lanzamiento)
-Lanzada a las 20:50. Cuatro pasos, secuenciales, ~60-90 min:
+### Tanda en curso: `scripts/cuarta_tanda.sh` (segundo lanzamiento, 21:06)
 
-1. `secuencia.py --mes-validacion 2016-04-28 --epocas 10 --dim 64` → `logs/secuencia_abril.log`
-2. `secuencia.py --mes-validacion 2016-05-28 --epocas 10 --dim 64` → `logs/secuencia_mayo.log`
-3. `ensemble.py --arboles 80 --profundidad 8` → `logs/ensemble.log`
-4. `router.py --arboles 80 --profundidad 8` → `logs/router.log` (primera ejecución nunca hecha)
+Cuatro pasos secuenciales. Log maestro `logs/cuarta_tanda.log`.
 
-Log maestro: `logs/cuarta_tanda.log`. **Respaldo de los resultados previos** (por si la
-re-ejecución sale peor y hay que comparar) en `%TEMP%\nbp_backup_pre_cuarta`: los dos
-`.npz`, `secuencia_metrics.json`, `ensemble_metrics.json` y los tres logs.
+| Paso | Estado | Resultado |
+|---|---|---|
+| 1. `secuencia.py --mes-validacion 2016-04-28 --epocas 10` | ✅ | GRU **0.88534**, Transformer **0.88507** |
+| 2. `secuencia.py --mes-validacion 2016-05-28 --epocas 10` | 🔄 en curso | — |
+| 3. `ensemble.py` | ⏳ | — |
+| 4. `router.py` (primera ejecución de su vida) | ⏳ | — |
+
+Lo interesante de abril: **el GRU gana al Transformer por poco** (0.88534 vs 0.88507), al
+revés que antes. Y el early stopping por fin actúa de verdad — el Transformer paró en la
+época 8 quedándose con la 6. En el GRU el MAP de parada seguía subiendo en la 10, así que
+10 épocas siguen quedándose cortas.
+
+**Respaldo de los resultados previos** en `%TEMP%\nbp_backup_pre_cuarta`: los dos `.npz`,
+`secuencia_metrics.json`, `ensemble_metrics.json` y los tres logs.
+
+### ⚠️ Trabajo escrito que AÚN NO está en el repo (si se pierde la sesión, está aquí)
+
+`src/secuencia.py` no se puede editar mientras la tanda lo ejecuta (lo lanza dos veces;
+cambiarlo a mitad rompería la comparación). Así que la versión nueva está esperando en:
+
+```
+%TEMP%\claude\c--Users-pablo-mparera-Desktop-portfolio-projects-next-best-product-banking\
+  b5571111-cce1-44ae-b840-bc92796f857b\scratchpad\secuencia_nuevo.py
+```
+
+929 líneas, ya validada con `ast.parse`. **Cuando termine la tanda: copiar encima de
+`src/secuencia.py`, pasar el smoke test y commitear.** Lo que añade:
+
+- `LARGO_MAXIMO = 16` y `recortar_largo()`: los tensores se preparan una vez al largo
+  máximo y cada configuración se queda con la cola que necesita, sin repetir Spark.
+- `a_numpy()` devuelve además `longitudes` (meses reales frente a relleno). Las tuplas de
+  datos pasan de 4 a 5 elementos.
+- `preparar_tramos()`: la preparación de los tres tramos, extraída de `main()` para que
+  `tuning.py` la pueda reutilizar.
+- Modelos configurables (`capas`, `cabezas`, `dropout`, `largo`, `atar_pesos`) y
+  `fabricar_arquitectura()`.
+- **Dos cabezas.** La principal ve secuencia + estáticas. La auxiliar ve SOLO la
+  secuencia, y predice el mes siguiente desde cada posición intermedia. La auxiliar no
+  puede ver las estáticas porque describen al cliente en el mes objetivo: dárselas a una
+  posición del pasado sería información futura respecto a lo que esa posición predice.
+- **Weight tying** opcional: la cabeza auxiliar reutiliza la matriz de embedding de altas
+  en vez de aprender una segunda tabla de 24×dim.
+- **Supervisión por posición** (`--supervision todas`) con tres máscaras: relleno,
+  última posición, y productos ya poseídos en esa posición.
+- **Calentamiento + coseno por paso**, no por época (con 8-20 épocas, un coseno de 8
+  escalones no es una curva).
+
+También están escritos y sin commitear `src/tuning.py` (búsqueda aleatoria) y la
+extensión de `scripts/smoke_test.py` para cubrir ambos. No se commitean todavía porque
+`tuning.py` importa funciones que solo existen en la versión nueva de `secuencia.py`.
 
 ### La pregunta que responde esta tanda
 ¿Ensemble o router superan al Transformer solo? Si la respuesta es no en ambos —que es lo
