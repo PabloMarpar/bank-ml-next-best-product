@@ -30,6 +30,43 @@ MSYS_NO_PATHCONV=1 docker compose run --rm -e PYTHONPATH=/app/src spark \
 Escribe `outputs/tuning_metrics.json`. Si al retomar ese fichero existe, la búsqueda
 terminó y el siguiente paso es leerlo.
 
+### Resultado de la búsqueda de hiperparámetros (`tuning.py`)
+
+Búsqueda aleatoria de 12 configuraciones, todas medidas **en el mes de parada** con el 40%
+del entrenamiento y tope de 8 épocas. El test no se ha tocado en toda la búsqueda.
+
+| | MAP de parada |
+|---|---|
+| mejor | 0.88639 |
+| mediana | 0.87989 |
+| peor | 0.87245 |
+| **rango** | **0.01394** |
+
+Un rango de 0.014 no es ruido: los hiperparámetros sí importaban aquí.
+
+**Configuración elegida:**
+```
+dim=128  capas=1  cabezas=4  dropout=0.1  lote=256  wd=1e-4
+largo=16  atar_pesos=NO  lambda_aux=1.0  lr=0.00115
+```
+
+Tres cosas que esa configuración dice, y que son material de entrevista:
+
+1. **`lambda_aux = 1.0`** — el valor más alto del espacio. La pérdida auxiliar (predecir el
+   mes siguiente desde cada posición) pesa tanto como la tarea principal. Es la evidencia
+   más directa de que la supervisión por posición era la mejora que faltaba.
+2. **`largo = 16`** — todo el histórico disponible, no los 12 que estaban fijados a ojo.
+3. **`capas = 1`** — una sola capa de atención gana a dos y a tres. Con secuencias de 16
+   pasos y un vocabulario de 24 productos, apilar capas solo añade parámetros que
+   sobreajustan.
+4. **`atar_pesos = False`** — el weight tying, que se implementó a propósito para esta
+   búsqueda, NO fue elegido. Se reporta igual: era una hipótesis razonable y los datos
+   dicen que aquí no ayuda.
+
+Después de la búsqueda se reentrena la ganadora con **3 semillas**, entrenamiento completo
+y tope de 20 épocas, para separar la mejora real del ruido de inicialización. El modelo que
+se exporta es el de mejor MAP **de parada**, nunca de test.
+
 ### Los dos veredictos de la cuarta tanda (ambos negativos, ambos se reportan)
 
 | Pregunta | Respuesta | Cifra |
