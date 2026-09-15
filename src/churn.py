@@ -109,28 +109,47 @@ def umbral_optimo(predicciones, coste=COSTE_CONTACTO, valor=VALOR_RETENCION,
     Por cada cliente al que se llama se paga el coste del contacto. Si de verdad se iba
     a dar de baja y la llamada funciona, se salva el margen. El optimo no es 0,5: con
     una llamada barata y un margen alto, compensa llamar a bastante gente dudosa.
+
+    Como se calcula, y por que asi:
+
+    La version directa es un bucle que prueba 99 umbrales y, para cada uno, cuenta cuanta
+    gente queda por encima. El problema es que cada cuenta es una accion de Spark, o sea
+    99 trabajos completos recorriendo la tabla entera. Medido sobre un dataset de juguete
+    ya tardaba casi dos minutos; sobre los 13,6M de filas reales seria inviable.
+
+    Aqui se recorre la tabla UNA vez: se agrupa por la probabilidad redondeada a dos
+    decimales, lo que deja como mucho 101 filas, y el acumulado se calcula en el driver
+    sobre esas 101 filas. Es el patron de siempre -- agregar en el cluster, rematar en
+    local -- y convierte 99 trabajos en uno.
     """
     extraer = F.udf(lambda v: float(v[1]), DoubleType())
-    puntuadas = predicciones.select(
-        extraer("probability").alias("p"), F.col("label")
-    ).cache()
+
+    # Un unico recorrido de la tabla: histograma de probabilidad contra etiqueta.
+    histograma = (
+        predicciones.select(extraer("probability").alias("p"), F.col("label"))
+        .withColumn("bucket", F.round(F.col("p"), 2))
+        .groupBy("bucket")
+        .agg(F.count("*").alias("n"), F.sum("label").alias("bajas"))
+        .collect()
+    )
+
+    # A partir de aqui son ~101 filas en memoria del driver: calculo trivial.
+    por_bucket = {
+        round(float(f["bucket"]), 2): (int(f["n"]), int(f["bajas"] or 0))
+        for f in histograma
+    }
 
     resultados = []
     for umbral in [i / 100 for i in range(1, 100)]:
-        fila = puntuadas.agg(
-            F.sum(F.when(F.col("p") >= umbral, 1).otherwise(0)).alias("contactados"),
-            F.sum(F.when((F.col("p") >= umbral) & (F.col("label") == 1), 1)
-                  .otherwise(0)).alias("aciertos"),
-        ).collect()[0]
-        contactados = fila["contactados"] or 0
-        aciertos = fila["aciertos"] or 0
+        # Contactados = todos los buckets con probabilidad >= umbral.
+        contactados = sum(n for b, (n, _) in por_bucket.items() if b >= umbral)
+        aciertos = sum(bajas for b, (_, bajas) in por_bucket.items() if b >= umbral)
         beneficio = aciertos * exito * valor - contactados * coste
         resultados.append({
             "umbral": umbral, "contactados": int(contactados),
             "bajas_capturadas": int(aciertos), "beneficio_estimado": round(beneficio, 2),
         })
 
-    puntuadas.unpersist()
     mejor = max(resultados, key=lambda r: r["beneficio_estimado"])
     return mejor, resultados
 
