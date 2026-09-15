@@ -36,3 +36,10 @@ Thumbs.db
 
 # Excepcion: el fichero de la demo si se versiona (es pequeno y lo necesita Streamlit Cloud)
 !app/demo_data.parquet
+
+# Logs de ejecucion: cientos de KB de barras de progreso de Spark, ruido en el historial.
+# Los numeros que importan quedan en outputs/*.json, que si se versionan.
+logs/
+
+# Matrices de predicciones exportadas por secuencia.py (se regeneran re-ejecutando).
+*.npz

@@ -9,7 +9,12 @@ services:
     environment:
       # La maquina de desarrollo tiene 32 GB. Spark corre en local[*] (un solo proceso),
       # asi que toda la memoria util es la del driver.
-      SPARK_DRIVER_MEMORY: 12g
+      # 9g y no 12g: el contenedor tiene 15,37 GB (reparto por defecto de WSL2, no los
+      # 31,5 GB de la maquina). El driver es solo el heap de la JVM; fuera de el hacen
+      # falta los procesos de Python de PySpark, los buffers de shuffle y el sistema.
+      # Con 12g la JVM se comia el 86% del contenedor y se pasaba el rato recolectando
+      # basura: la CPU caia de 1.500% a 275% sin avanzar.
+      SPARK_DRIVER_MEMORY: 9g
       SPARK_LOCAL_DIRS: /app/data/tmp_spark
       # Se hereda del host si esta definida; si no, se usa ~/.kaggle montado arriba.
       KAGGLE_API_TOKEN: ${KAGGLE_API_TOKEN:-}

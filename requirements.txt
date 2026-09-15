@@ -15,3 +15,8 @@ streamlit==1.39.0
 # dependencia obligatoria aunque aqui no se use directamente.
 xgboost==2.1.3
 scikit-learn==1.5.2
+
+# PyTorch en version CPU. Se usa para el modelo secuencial (src/secuencia.py), que se
+# lanza desde Spark con TorchDistributor. No hace falta GPU: las secuencias son cortas
+# (16 meses como maximo) y el vocabulario es de 24 productos.
+torch==2.5.1
