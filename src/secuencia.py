@@ -285,8 +285,8 @@ def definir_modelos():
     return ModeloGRU, ModeloTransformer
 
 
-def entrenar_red(arquitectura, datos_train, datos_parada, epocas: int, lote: int,
-                 lr: float, verbose: bool = True):
+def entrenar_red(arquitectura, datos_train, datos_parada, reales_parada, epocas: int,
+                 lote: int, lr: float, verbose: bool = True):
     """Bucle de entrenamiento. Devuelve (modelo, historial)."""
     import torch
     from torch import nn
@@ -349,8 +349,15 @@ def entrenar_red(arquitectura, datos_train, datos_parada, epocas: int, lote: int
         registro = {"perdida": round(media, 5)}
 
         if datos_parada is not None:
-            map_parada = _map_validacion(modelo, datos_parada)
+            map_parada = _map_validacion(modelo, datos_parada, reales_parada)
             registro["map_parada"] = round(map_parada, 5)
+            # Guarda: un MAP de parada exactamente 0 en la primera epoca significa que la
+            # metrica esta rota, no que el modelo sea malo (un modelo al azar sacaria algo).
+            # Si no se avisa, el early stopping corta en la epoca 1 y parece que entreno.
+            if epoca == 0 and map_parada == 0.0:
+                print("      AVISO: MAP de parada = 0 en la primera epoca. La metrica de "
+                      "early stopping esta rota; el entrenamiento se cortaria solo.",
+                      flush=True)
             if map_parada > mejor_map:
                 mejor_map = map_parada
                 mejor_estado = copy.deepcopy(modelo.state_dict())
@@ -376,18 +383,24 @@ def entrenar_red(arquitectura, datos_train, datos_parada, epocas: int, lote: int
     return modelo, historial
 
 
-def _map_validacion(modelo, datos_val) -> float:
-    """MAP@7 rapido sobre un conjunto de validacion, para el early stopping."""
-    secuencias, estaticas, poseidos, objetivos = datos_val
+def _map_validacion(modelo, datos_parada, reales_parada) -> float:
+    """MAP@7 sobre el mes de parada, con la MISMA definicion que la medicion final.
+
+    La primera version comparaba contra `objetivos`, que en el tramo de parada son todos
+    -1: ese tramo se construye con a_numpy(filas_parada) sin con_objetivo=True, porque un
+    cliente puede haber contratado varios productos ese mes y no hay un unico objetivo.
+    El resultado era que la metrica devolvia 0.0 en todas las epocas, el early stopping
+    no veia mejora nunca y se quedaba con los pesos de la epoca 1. Un early stopping roto
+    es peor que no tenerlo: no solo no elige bien, sino que corta el entrenamiento.
+
+    Se mide contra `reales` (la lista de productos que el cliente contrato de verdad ese
+    mes) reutilizando map_at_k, que es la funcion con la que se reporta el resultado
+    final. Que la metrica de parada y la de medicion sean la misma importa: si difieren,
+    se esta eligiendo la epoca por un criterio distinto del que luego se publica.
+    """
+    secuencias, estaticas, poseidos, objetivos = datos_parada
     probs = puntuar_enmascarado(modelo, (secuencias, estaticas, poseidos, objetivos))
-    orden = np.argsort(-probs, axis=1)[:, :K]
-    total = 0.0
-    for i in range(len(objetivos)):
-        if objetivos[i] < 0:
-            continue
-        total += 1.0 if objetivos[i] in orden[i] else 0.0
-    positivos = (objetivos >= 0).sum()
-    return total / max(positivos, 1)
+    return map_at_k(probs, poseidos, reales_parada)
 
 
 def puntuar_enmascarado(modelo, datos, lote: int = 4096):
@@ -530,6 +543,10 @@ def main() -> None:
         datos_parada = a_numpy(filas_parada)
         datos_val = a_numpy(filas_val)
         reales = [list(f["reales"]) for f in filas_val]
+        # Los productos realmente contratados en el mes de parada. El early stopping los
+        # necesita para medir MAP@7 igual que se mide el resultado final (ver
+        # _map_validacion): sin ellos la metrica de parada era siempre 0.
+        reales_parada = [list(f["reales"]) for f in filas_parada]
 
         # Normalizacion con los estadisticos del entrenamiento, aplicados a los tres.
         est_train, media, desviacion = normalizar(datos_train[1])
@@ -573,11 +590,12 @@ def main() -> None:
             )
             modelo, historial = distribuidor.run(
                 entrenar_red, arquitecturas[nombre], datos_train, datos_parada,
+                reales_parada,
                 args.epocas, args.lote, args.lr, False,
             )
         else:
             modelo, historial = entrenar_red(
-                arquitecturas[nombre], datos_train, datos_parada,
+                arquitecturas[nombre], datos_train, datos_parada, reales_parada,
                 args.epocas, args.lote, args.lr,
             )
 
