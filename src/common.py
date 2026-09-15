@@ -184,25 +184,68 @@ def marcar_faltantes(df: DataFrame, numericas: list[str]) -> DataFrame:
     return df.withColumns(nuevas)
 
 
+def agrupar_categorias_raras(
+    df: DataFrame, columna: str, maximo: int = 30, etiqueta: str = "OTROS"
+) -> DataFrame:
+    """Deja las `maximo` categorias mas frecuentes y agrupa el resto bajo una etiqueta.
+
+    Por que hace falta: prev_canal_entrada tiene 161 valores distintos. Los arboles de
+    Spark necesitan que maxBins sea mayor que la cardinalidad de la categorica mas
+    grande, y el coste de construir los histogramas de cada nodo crece con maxBins. Con
+    161 canales hay que poner maxBins por encima de 161, y el entrenamiento se arrastra.
+
+    La cola larga ademas no aporta: los canales que aparecen cuatro veces no dan senal,
+    dan ruido y sobreajuste. Agruparlos en OTROS baja maxBins a 32 y conserva lo util.
+    """
+    frecuentes = [
+        f[columna]
+        for f in df.groupBy(columna).count().orderBy(F.desc("count")).limit(maximo).collect()
+        if f[columna] is not None
+    ]
+    return df.withColumn(
+        columna,
+        F.when(F.col(columna).isin(frecuentes), F.col(columna)).otherwise(F.lit(etiqueta)),
+    )
+
+
 def etapas_preprocesado(
-    categoricas: list[str], numericas: list[str], columnas_extra: list[str]
+    categoricas: list[str],
+    numericas: list[str],
+    columnas_extra: list[str],
+    one_hot: bool = False,
 ) -> tuple[list, str]:
-    """Construye las etapas de preprocesado comunes a los dos modelos.
+    """Construye las etapas de preprocesado comunes a los modelos.
 
-    Devuelve (etapas, nombre_columna_features). El orden importa: indexar -> codificar ->
-    imputar -> ensamblar.
+    Devuelve (etapas, nombre_columna_features). El orden importa: indexar -> (codificar)
+    -> imputar -> ensamblar.
 
-    maxBins de los arboles debe ser mayor que la categorica de mayor cardinalidad;
-    canal_entrada ronda los 160 valores distintos, de ahi el 256 que usan los modelos.
+    one_hot=False por defecto, y es deliberado. El one-hot es para modelos LINEALES, que
+    necesitan una columna por categoria porque no saben agrupar valores. Los arboles si
+    saben: StringIndexer deja metadata que marca la columna como nominal, VectorAssembler
+    la propaga, y el arbol hace particiones por subconjuntos de categorias -- algo que el
+    one-hot precisamente le impide, porque cada corte solo puede aislar una categoria.
+
+    Medido en este proyecto: con one_hot=True el vector pasaba de ~45 a ~250 dimensiones
+    por culpa de los 161 canales de entrada, y el GBT usaba el 23% de la CPU disponible
+    construyendo histogramas de columnas casi siempre a cero.
+
+    Se deja el parametro porque si algun dia se anade un modelo lineal (una regresion
+    logistica de referencia, por ejemplo) ahi si hara falta ponerlo a True.
     """
     indexadores = [
         StringIndexer(inputCol=c, outputCol=f"{c}_idx", handleInvalid="keep")
         for c in categoricas
     ]
-    codificadores = [
-        OneHotEncoder(inputCol=f"{c}_idx", outputCol=f"{c}_ohe", handleInvalid="keep")
-        for c in categoricas
-    ]
+    codificadores = (
+        [
+            OneHotEncoder(inputCol=f"{c}_idx", outputCol=f"{c}_ohe", handleInvalid="keep")
+            for c in categoricas
+        ]
+        if one_hot
+        else []
+    )
+    sufijo = "_ohe" if one_hot else "_idx"
+
     # Mediana y no media: renta y edad tienen colas largas y la media se desplaza sola.
     imputador = Imputer(
         inputCols=numericas,
@@ -214,7 +257,7 @@ def etapas_preprocesado(
             [f"{c}_imp" for c in numericas]
             + [f"{c}_falta" for c in numericas]
             + columnas_extra
-            + [f"{c}_ohe" for c in categoricas]
+            + [f"{c}{sufijo}" for c in categoricas]
         ),
         outputCol="features",
         handleInvalid="keep",

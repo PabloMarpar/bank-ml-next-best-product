@@ -114,6 +114,24 @@ def construir(df):
     # Detalle 2: fuera las filas sin mes anterior consecutivo.
     df = df.filter(F.col("mes_consecutivo"))
 
+    # --- Antiguedad de cada producto ---------------------------------------------------
+    # Cuantos de los ultimos 6 meses ha tenido el cliente cada producto.
+    #
+    # Es la variable mas predictiva para las bajas y faltaba en la primera version. Quien
+    # acaba de contratar una tarjeta se comporta de forma completamente distinta a quien
+    # la tiene desde hace dos anos: las cancelaciones se concentran en los primeros meses.
+    # Sin esto, el modelo no podia distinguir los dos casos, porque meses_observados dice
+    # cuanto llevamos viendo al CLIENTE, no cuanto lleva el con ESE producto.
+    #
+    # Se mide sobre una ventana de 6 meses y no sobre todo el historial a proposito: lo
+    # que discrimina es "recien contratado o asentado", y a partir de medio ano la
+    # distincion entre 6 y 16 meses aporta mucho menos.
+    w6 = Window.partitionBy("ncodpers").orderBy("mes_idx").rangeBetween(-5, 0)
+    df = df.withColumns({
+        f"tenencia_{p}": F.coalesce(F.sum(f"prev_{p}").over(w6), F.lit(0))
+        for p in productos
+    })
+
     # --- Actividad reciente: altas y bajas de los 3 meses previos ---------------------
     # rangeBetween sobre mes_idx (no rowsBetween) para que "3 meses" signifique 3 meses
     # de calendario aunque al cliente le falte algun snapshot intermedio.
@@ -131,6 +149,7 @@ def construir(df):
         + [f"prev_{c}" for c in ATRIBUTOS_CLIENTE]
         + ["n_prod_prev", "altas_3m", "bajas_3m", "meses_observados"]
         + [f"prev_{p}" for p in productos]
+        + [f"tenencia_{p}" for p in productos]
         + [f"alta_{p}" for p in productos]
         + [f"baja_{p}" for p in productos]
         + ["n_altas", "n_bajas"]

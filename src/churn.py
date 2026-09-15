@@ -70,6 +70,7 @@ from pyspark.sql.types import DoubleType
 
 from common import (
     DATA_EXPORT,
+    agrupar_categorias_raras,
     DATA_FEATURES,
     MES_VALIDACION,
     NOMBRES_PRODUCTO,
@@ -86,7 +87,10 @@ CATEGORICAS = ["prev_segmento", "prev_canal_entrada", "prev_sexo", "prev_tiprel_
                "prev_nomprov", "producto"]
 NUMERICAS = ["prev_age", "prev_antiguedad", "prev_renta", "prev_ind_actividad_cliente",
              "prev_ind_nuevo", "n_prod_prev", "altas_3m", "bajas_3m", "meses_observados",
-             "mes_del_ano"]
+             "mes_del_ano",
+             # Meses (de los ultimos 6) que el cliente lleva con ESTE producto. La anade
+             # a_formato_largo al apilar, sacandola del struct de cada producto.
+             "tenencia_producto"]
 
 # Supuestos del caso de negocio, explicitos para poder discutirlos.
 # No son cifras reales de ningun banco: son un orden de magnitud razonable que sirve
@@ -101,22 +105,44 @@ def a_formato_largo(df):
 
     Se parte de la tabla ancha y se apila: es lo que convierte 24 columnas de objetivo
     en un unico problema binario con el producto como variable mas.
+
+    Detalle de rendimiento que no es cosmetico: se proyectan PRIMERO solo las columnas
+    que el modelo va a usar, y se explota despues. Al reves -- explotar la tabla entera y
+    quedarse luego con lo que interesa -- se multiplican por 24 unas 130 columnas de las
+    que el modelo usa una fraccion, y el resultado no cabe en memoria. La primera version
+    de esto cacheaba la tabla completa y la JVM se ahogaba: 86% del contenedor ocupado y
+    la CPU desplomada recolectando basura.
     """
+    # Lo unico que hace falta aguas abajo: identificadores, el corte temporal, las
+    # variables del modelo y las 24 columnas prev_ de producto.
+    columnas_modelo = (
+        ["ncodpers", "fecha_dato", "mes_idx"]
+        + [c for c in CATEGORICAS if c != "producto"]
+        + NUMERICAS
+        + [f"prev_{p}" for p in PRODUCTOS]
+    )
+    presentes = [c for c in dict.fromkeys(columnas_modelo) if c in df.columns]
+
     estructuras = F.array(*[
         F.struct(
             F.lit(p).alias("producto"),
             F.col(f"baja_{p}").cast("double").alias("label"),
             F.col(f"prev_{p}").alias("tenia"),
+            # La antiguedad viaja dentro del struct para que, al apilar, cada fila se
+            # quede con la de SU producto. Es la variable mas informativa del modelo:
+            # una tarjeta de hace un mes y una de hace dos anos se cancelan a ritmos
+            # completamente distintos.
+            F.coalesce(F.col(f"tenencia_{p}"), F.lit(0)).cast("double").alias("tenencia"),
         )
         for p in PRODUCTOS
     ])
-    comunes = [c for c in df.columns
-               if not c.startswith(("alta_", "baja_"))]
+
     return (
-        df.select(*comunes, F.explode(estructuras).alias("e"))
+        df.select(*presentes, F.explode(estructuras).alias("e"))
         .filter(F.col("e.tenia") == 1)          # solo se puede dar de baja lo que se tiene
         .withColumn("producto", F.col("e.producto"))
         .withColumn("label", F.col("e.label"))
+        .withColumn("tenencia_producto", F.col("e.tenencia"))
         .drop("e")
     )
 
@@ -194,7 +220,11 @@ def construir_pipeline(arboles: int, profundidad: int) -> Pipeline:
     )
     gbt = GBTClassifier(
         featuresCol=col_features, labelCol="label",
-        maxIter=arboles, maxDepth=profundidad, maxBins=256,
+        # maxBins 40 y no 256: tras recortar la cola de canal_entrada, la categorica mas
+        # grande tiene 31 valores. El coste de construir los histogramas de cada nodo
+        # crece con maxBins, asi que ponerlo justo por encima de lo necesario es una
+        # de las palancas mas directas para acelerar un arbol en Spark.
+        maxIter=arboles, maxDepth=profundidad, maxBins=40,
         stepSize=0.1, subsamplingRate=0.8, seed=42,
     )
     return Pipeline(stages=[*etapas, gbt])
@@ -280,6 +310,12 @@ def main() -> None:
     corte = feats.filter(F.col("fecha_dato") == args.mes_validacion).select(
         F.first("mes_idx").alias("idx")
     ).collect()[0]["idx"]
+
+    # Recorte de la cola larga antes de nada. prev_canal_entrada trae 161 valores
+    # distintos; los que aparecen un punado de veces no dan senal y obligan a subir
+    # maxBins, que es justo lo que ralentiza el entrenamiento.
+    for columna, tope in (("prev_canal_entrada", 30), ("prev_nomprov", 30)):
+        feats = agrupar_categorias_raras(feats, columna, maximo=tope)
 
     largo = marcar_faltantes(a_formato_largo(feats), NUMERICAS)
 
