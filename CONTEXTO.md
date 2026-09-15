@@ -15,116 +15,68 @@ Recommendation, Kaggle). Corre en Docker porque la máquina no tiene Java.
 
 ## ⚠️ AL RETOMAR: qué hay en vuelo ahora mismo
 
-**Sesión del 2026-09-15 (segunda).** El bug de fuga en `secuencia.py` **ya está
-arreglado** y hay una tanda larga ejecutándose. Detalle:
+**Sesión del 2026-09-15/16.** La cuarta tanda terminó con los dos veredictos que faltaban,
+y ahora mismo está corriendo **`src/tuning.py`** (búsqueda de hiperparámetros del
+Transformer, ~2 h, lanzada a las 22:40 hora del contenedor).
 
-### El bug, arreglado
-`entrenar_red()` recibía `datos_val` (mes de test) donde debía recibir `datos_parada`
-(mes t-1). Arreglado en las dos llamadas de `main()` y, además, se renombró el parámetro
-dentro de la función a `datos_parada` (y `map_val` → `map_parada`): el bug ocurrió
-precisamente porque el parámetro se llamaba como el tramo equivocado.
+```bash
+# El comando exacto que está corriendo
+MSYS_NO_PATHCONV=1 docker compose run --rm -e PYTHONPATH=/app/src spark \
+  python -u src/tuning.py --mes-validacion 2016-05-28 --arquitectura transformer \
+  --configuraciones 12 --epocas-busqueda 8 --epocas-final 20 --fraccion-busqueda 0.4 \
+  --semillas-finales 3 --supervision todas > logs/tuning.log 2>&1
+```
 
-### Corrección importante al diagnóstico anterior
-La versión previa de este documento decía que los MAP del Transformer/GRU estaban
-contaminados. **No lo estaban.** Los logs (`logs/secuencia.log`, `logs/secuencia_abril.log`)
-no imprimen `MAP val` en ninguna época ni la línea "Clientes de parada": ambos runs
-entrenaron **5 épocas fijas con early stopping desactivado**. La fuga estaba *latente* en
-el refactor a medias, pero nunca llegó a ejecutarse. Los números 0.8864 / 0.8826 eran
-limpios.
+Escribe `outputs/tuning_metrics.json`. Si al retomar ese fichero existe, la búsqueda
+terminó y el siguiente paso es leerlo.
 
-Se re-ejecuta igualmente, por otro motivo: ahora el early stopping sí funciona, y con la
-pérdida todavía bajando en la época 5 (1.29, sin aplanar) el número de épocas era un
-hiperparámetro sin elegir. La tanda va a **10 épocas** y deja que el mes t-1 decida.
+### Los dos veredictos de la cuarta tanda (ambos negativos, ambos se reportan)
 
-Ojo al comparar: el MAP puede moverse por **dos** causas a la vez, no solo por el early
-stopping. El tramo de entrenamiento ahora filtra `mes_idx < mes_parada` (antes llegaba
-hasta t-1), así que también **pierde un mes de datos**.
-
-### Segundo bug encontrado y arreglado: el early stopping no medía nada
-
-La primera cuarta tanda se abortó a los 20 min al ver `MAP parada 0.0` en todas las épocas.
-Causa: `datos_parada = a_numpy(filas_parada)` se construye **sin** `con_objetivo=True` (un
-cliente puede contratar varios productos el mismo mes, así que no hay objetivo único), por
-lo que sus `objetivos` son todos `-1`. `_map_validacion` comparaba contra esa columna y
-devolvía siempre 0.
-
-El efecto no era que el early stopping no ayudara: **cortaba el entrenamiento**. Con
-`mejor_map = -1.0`, la época 1 fijaba el máximo en 0.0, ninguna posterior lo superaba, y a
-las 2 épocas paraba devolviendo los pesos de la primera. El GRU entrenó 3 épocas de 10 y
-devolvió el estado de la 1.
-
-Arreglado: `_map_validacion` mide contra `reales` reutilizando `map_at_k`, la misma función
-con la que se publica el resultado final. Más una guarda que avisa si el MAP de parada sale
-exactamente 0 en la primera época. Commit `96a73c4`.
-
-### Tercer hallazgo: el refactor a medias traía más cambios de los documentados
-
-La secuencia ya no tiene 1 canal sino **3** (`CANALES = 3`: estado / altas / bajas por mes).
-Se ve en el log: 377 MB de secuencias frente a 135 MB, y la pérdida arranca en 1.20 en vez
-de 1.54. **Los 0.8864 / 0.8826 de la tabla de abajo son con UN canal.** Los nuevos números
-no son comparables uno a uno con los viejos: cambian a la vez el nº de canales, el mes de
-entrenamiento que se pierde y el early stopping.
-
-### Tanda en curso: `scripts/cuarta_tanda.sh` (segundo lanzamiento, 21:06)
-
-Cuatro pasos secuenciales. Log maestro `logs/cuarta_tanda.log`.
-
-| Paso | Estado | Resultado |
+| Pregunta | Respuesta | Cifra |
 |---|---|---|
-| 1. `secuencia.py --mes-validacion 2016-04-28 --epocas 10` | ✅ | GRU **0.88534**, Transformer **0.88507** |
-| 2. `secuencia.py --mes-validacion 2016-05-28 --epocas 10` | 🔄 en curso | — |
-| 3. `ensemble.py` | ⏳ | — |
-| 4. `router.py` (primera ejecución de su vida) | ⏳ | — |
+| ¿La mezcla de los 5 modelos supera al Transformer solo? | **No** | 0.90294 vs 0.90299 (−0.00006) |
+| ¿Un modelo distinto por segmento lo supera? | **No, en la práctica** | +0.061% por historia, +0.017% por nº de productos |
 
-Lo interesante de abril: **el GRU gana al Transformer por poco** (0.88534 vs 0.88507), al
-revés que antes. Y el early stopping por fin actúa de verdad — el Transformer paró en la
-época 8 quedándose con la 6. En el GRU el MAP de parada seguía subiendo en la 10, así que
-10 épocas siguen quedándose cortas.
+Detalle que vale la pena contar del ensemble: los pesos elegidos en t-1 fueron **50/50
+entre GRU y Transformer** (0 para XGBoost y popularidad). O sea que el problema no es que
+la mezcla esté mal ponderada — es que los dos modelos aciertan en los mismos clientes.
 
-**Respaldo de los resultados previos** en `%TEMP%\nbp_backup_pre_cuarta`: los dos `.npz`,
-`secuencia_metrics.json`, `ensemble_metrics.json` y los tres logs.
+Detalle del router: la segmentación por número de productos es además **inestable**, 1 de
+5 segmentos cambia de ganador entre el mes de decisión y el de medición. La segmentación
+por historia es estable (0 de 5) pero su ganancia es de 0.06%. El propio script concluye
+que no compensa mantener varios modelos.
 
-### ⚠️ Trabajo escrito que AÚN NO está en el repo (si se pierde la sesión, está aquí)
+### Por qué los números subieron tanto respecto a la tabla vieja
 
-`src/secuencia.py` no se puede editar mientras la tanda lo ejecuta (lo lanza dos veces;
-cambiarlo a mitad rompería la comparación). Así que la versión nueva está esperando en:
+| Modelo | Antes | Ahora | Causa |
+|---|---|---|---|
+| GRU (mayo) | 0.88260 | **0.90157** | 3 canales + 10 épocas con early stopping real |
+| Transformer (mayo) | 0.88638 | **0.90299** | idem |
 
-```
-%TEMP%\claude\c--Users-pablo-mparera-Desktop-portfolio-projects-next-best-product-banking\
-  b5571111-cce1-44ae-b840-bc92796f857b\scratchpad\secuencia_nuevo.py
-```
+Tres cosas cambiaron a la vez y conviene no atribuirlo todo al early stopping:
 
-929 líneas, ya validada con `ast.parse`. **Cuando termine la tanda: copiar encima de
-`src/secuencia.py`, pasar el smoke test y commitear.** Lo que añade:
+1. **La secuencia pasó de 1 canal a 3** (estado / altas / bajas por mes). Estaba en el
+   código del refactor a medias pero nunca se había ejecutado.
+2. **El early stopping empezó a funcionar** (ver los dos bugs más abajo).
+3. **El entrenamiento perdió un mes**: ahora filtra `mes_idx < mes_parada`, antes llegaba
+   hasta t-1. Esto juega EN CONTRA, así que la mejora real de 1 y 2 es aún mayor.
 
-- `LARGO_MAXIMO = 16` y `recortar_largo()`: los tensores se preparan una vez al largo
-  máximo y cada configuración se queda con la cola que necesita, sin repetir Spark.
-- `a_numpy()` devuelve además `longitudes` (meses reales frente a relleno). Las tuplas de
-  datos pasan de 4 a 5 elementos.
-- `preparar_tramos()`: la preparación de los tres tramos, extraída de `main()` para que
-  `tuning.py` la pueda reutilizar.
-- Modelos configurables (`capas`, `cabezas`, `dropout`, `largo`, `atar_pesos`) y
-  `fabricar_arquitectura()`.
-- **Dos cabezas.** La principal ve secuencia + estáticas. La auxiliar ve SOLO la
-  secuencia, y predice el mes siguiente desde cada posición intermedia. La auxiliar no
-  puede ver las estáticas porque describen al cliente en el mes objetivo: dárselas a una
-  posición del pasado sería información futura respecto a lo que esa posición predice.
-- **Weight tying** opcional: la cabeza auxiliar reutiliza la matriz de embedding de altas
-  en vez de aprender una segunda tabla de 24×dim.
-- **Supervisión por posición** (`--supervision todas`) con tres máscaras: relleno,
-  última posición, y productos ya poseídos en esa posición.
-- **Calentamiento + coseno por paso**, no por época (con 8-20 épocas, un coseno de 8
-  escalones no es una curva).
+### Los dos bugs que se encontraron y arreglaron (ambos de early stopping)
 
-También están escritos y sin commitear `src/tuning.py` (búsqueda aleatoria) y la
-extensión de `scripts/smoke_test.py` para cubrir ambos. No se commitean todavía porque
-`tuning.py` importa funciones que solo existen en la versión nueva de `secuencia.py`.
+**Bug 1 — fuga latente.** `entrenar_red()` recibía `datos_val` (mes de test) donde debía
+recibir `datos_parada` (mes t-1). **No llegó a contaminar ningún resultado**: los logs
+previos no imprimen `MAP val` en ninguna época, porque esas ejecuciones corrían con épocas
+fijas y el early stopping desactivado. Era una fuga esperando a activarse. Arreglado, y el
+parámetro renombrado a `datos_parada` — el bug existió porque se llamaba como el tramo
+equivocado.
 
-### La pregunta que responde esta tanda
-¿Ensemble o router superan al Transformer solo? Si la respuesta es no en ambos —que es lo
-esperable— el plan acordado con el usuario es **dejar de añadir modelos encima y mejorar el
-Transformer por dentro**, y solo después cerrar el resto del proyecto.
-
+**Bug 2 — la métrica no medía nada.** `datos_parada` se construye sin `con_objetivo=True`
+(un cliente puede contratar varios productos el mismo mes, no hay objetivo único), así que
+sus `objetivos` eran todos `-1` y `_map_validacion` devolvía siempre 0.0. El efecto no era
+que el early stopping no ayudase: **cortaba el entrenamiento**. Con `mejor_map = -1.0`, la
+época 1 fijaba el máximo en 0.0, ninguna posterior lo superaba y a las 2 épocas paraba
+devolviendo los pesos de la primera. Arreglado midiendo contra `reales` con `map_at_k`, la
+misma función del resultado publicado, más una guarda que avisa si sale exactamente 0.
 
 ### Plan acordado con el usuario para lo que viene después
 
@@ -154,7 +106,7 @@ todas las buenas prácticas de optimización de hiperparámetros. El plan:
 **Regla que no se rompe:** ningún hiperparámetro se elige mirando el mes de test. Se elige
 en t-1 y se aplica a ciegas en t.
 
-## Estado actual (última actualización: 2026-09-15, segunda sesión — fix de fuga + cuarta tanda)
+## Estado actual (última actualización: 2026-09-16, sesión autónoma: bugs, tanda y tuning)
 
 | Fase / módulo | Estado |
 |---|---|
@@ -165,10 +117,10 @@ en t-1 y se aplica a ciegas en t.
 | 2b — `tenencia_producto` | ✅ añadida a `features.py` (meses que el cliente lleva con CADA producto) |
 | Control de fuga (`leakage_check.py`) | ✅ ejecutado y con el veredicto corregido (ver abajo) |
 | 3 — Recomendación (`recommend.py`) | ✅ 5 enfoques ejecutados sobre datos reales |
-| 3b — Secuencial (`secuencia.py`) | 🔄 fuga arreglada; **re-ejecutándose** con 10 épocas y early stopping real |
-| 3c — Ensemble (`ensemble.py`) | 🔄 ejecutado (veredicto: NO aporta); **re-ejecutándose** sobre los `.npz` nuevos |
+| 3b — Secuencial (`secuencia.py`) | ✅ dos bugs arreglados y re-ejecutado: Transformer **0.90299**, GRU **0.90157** |
+| 3c — Ensemble (`ensemble.py`) | ✅ re-ejecutado sobre los `.npz` nuevos: **NO aporta** (−0.00006) |
 | 3d — Learning to rank (`ranker.py`) | ✅ ejecutado: NO mejora sobre el clasificador |
-| 3e — Router por segmento (`router.py`) | 🔄 escrito; **ejecutándose por primera vez** en la cuarta tanda |
+| 3e — Router por segmento (`router.py`) | ✅ ejecutado por fin: **+0,06%**, no compensa mantener varios modelos |
 | 4 — Bajas (`churn.py`) | ✅ ejecutado y optimizado; **falta re-ejecutar con `tenencia_producto`** |
 | 5 — Negocio (`business.py`) | ⚠️ parcialmente al día: **ya re-ejecutado con el umbral 0.80** (matriz sana: 6,1 / 63,8 / 15,4 / 14,7%). Lo que sigue pendiente es la **fuente**: lee `prob_compra` de XGBoost, no del Transformer |
 | 6 — Rendimiento (`perf.py`) | ✅ ejecutado, `PERFORMANCE.md` escrito con los 7 experimentos |
@@ -179,8 +131,9 @@ en t-1 y se aplica a ciegas en t.
 | 8 — Demo Streamlit | ⏳ código escrito, **falta generar `demo_data.parquet`** |
 | 8 — README.md | ✅ escrito, con **huecos de cifras pendientes de rellenar** (marcados `<!-- ... -->`) |
 | Card en el portfolio | ⏳ pendiente |
-| Subir a GitHub | ⏳ **pendiente, esperando confirmación del usuario** — nada se ha subido |
-| Commit local | ⏳ hay cambios grandes sin commitear (ver `git status` abajo) |
+| Pasar el repo a público | ⏳ pendiente, acordado hacerlo **al terminar** el proyecto |
+| Repo en GitHub | ✅ **subido**: `PabloMarpar/bank-ml-next-best-product`, PRIVADO, rama `main` |
+| 3f — Tuning (`tuning.py`) | 🔄 **corriendo ahora** (~2 h): búsqueda aleatoria de 12 configuraciones |
 | `CLAUDE.md` | ✅ **nuevo**: lo carga Claude Code solo al abrir sesión; importa `CONTEXTO.md` con `@` |
 
 ## Entorno y cómo se ejecuta
@@ -214,40 +167,39 @@ relanzar varios pasos seguidos con logging a fichero por paso.
 
 ## Resultados medidos sobre el dataset real (13,6M filas)
 
-### Recomendación — 6 enfoques comparados (MAP@7, solo sobre clientes que compraron algo)
+### Recomendación — 7 enfoques comparados (MAP@7, solo sobre clientes que compraron algo)
+
+Medido en 2016-05-28 con el entrenamiento cortado en t-2 y el early stopping decidido en
+t-1. **Los tres canales y el early stopping arreglado ya están dentro de estos números.**
 
 | Enfoque | MAP@7 | vs popularidad | Escala Kaggle* |
 |---|---|---|---|
-| **Transformer causal (secuencial)** | **0.8864** | **1,38x** | **≈0.0267** |
-| GRU (secuencial) | 0.8826 | 1,37x | ≈0.0266 |
-| XGBoost multiclase | 0.8609 | 1,34x | ≈0.0259 |
+| **Transformer causal (secuencial)** | **0.90299** | **1,40x** | **≈0.0272** |
+| GRU (secuencial) | 0.90157 | 1,40x | ≈0.0271 |
+| Mezcla de los 5 (ensemble) | 0.90294 | 1,40x | ≈0.0272 |
+| Enrutado por segmento de historia | 0.90355 | 1,41x | ≈0.0272 |
+| XGBoost multiclase | 0.85783 | 1,33x | ≈0.0258 |
 | XGBoost + ALS (híbrido corregido) | 0.8606 | 1,34x | ≈0.0259 |
 | XGBoost ranker (`rank:ndcg`) | 0.8517 | 1,32x | ≈0.0256 |
 | Bosque aleatorio | 0.8332 | 1,30x | ≈0.0251 |
-| Popularidad (baseline) | 0.6431 | — | ≈0.0194 |
+| Popularidad (baseline) | 0.64302 | — | ≈0.0194 |
 | ALS solo (sobre posesión) | 0.5283 | 0,82x | ≈0.0159 |
 
 `*` Kaggle mide MAP@7 sobre TODA la cartera (contando ceros); aquí se mide solo sobre quien
 compró algo (27.875 de 926.663 clientes = 3,01%). Conversión: `MAP_aquí × 3,01% ≈ MAP_Kaggle`.
 Referencia: ganador de la competición 0.031, mediana de ~1.800 equipos ≈0.025.
 
-**⚠️ Los números del Transformer/GRU de esta tabla son PRE-arreglo de la fuga de early
-stopping** descrita arriba. Hay que re-ejecutar `secuencia.py` tras el fix y actualizar esta
-tabla.
-
-**Ensemble de los 5 modelos:** pesos elegidos honestamente en el mes t-1 (90% Transformer,
-10% GRU, 0% el resto) → en el mes de test da exactamente el mismo MAP que el Transformer solo
-(0.88638). **Conclusión: no aporta**, el Transformer domina tanto que mezclar no ayuda.
+El ensemble y el enrutado aparecen en la tabla por transparencia, pero **ninguno se queda**:
+sus diferencias con el Transformer solo (−0.00005 y +0.00056) no justifican mantener varios
+modelos en producción. Ver los veredictos completos arriba.
 
 **Learning-to-rank (`rank:ndcg` con `SparkXGBRanker`):** 0.8517 vs 0.8609 del clasificador
 multiclase → **−1,06%, no mejora**. El ranker paga dos peajes: solo entrena con grupos que
 tienen algún positivo, y el muestreo de negativos le quita contexto.
 
-**Router por segmento:** escrito (`src/router.py`) pero **sin ejecutar todavía**. Decide qué
-modelo usar por tramo de historial/nº de productos, con la regla fijada en t-1 y aplicada a
-ciegas en t (mismo patrón anti-fuga). Predicción hecha antes de ejecutarlo: probablemente no
-aporte, porque el Transformer gana de forma bastante uniforme y no por arrasar en un segmento
-concreto — pero hay que ejecutarlo para confirmarlo, no asumirlo.
+**Tres enfoques probados y descartados con datos** (ALS solo, ensemble, ranker) más uno que
+aporta tan poco que tampoco se queda (router). Eso es parte del resultado, no un fracaso:
+la alternativa habría sido montar una arquitectura de cuatro modelos para ganar 0,06%.
 
 ### Caída de negocio (`churn.py`)
 
