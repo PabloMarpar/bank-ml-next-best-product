@@ -75,6 +75,7 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 
 from common import (
+    DATA_EXPORT,
     DATA_FEATURES,
     MES_VALIDACION,
     NOMBRES_PRODUCTO,
@@ -742,7 +743,90 @@ def preparar_tramos(spark, mes_validacion: str, largo: int = LARGO_MAXIMO,
         "supervision": supervision,
         "mes_test": mes_test,
         "mes_parada": mes_parada,
+        # Los estadisticos de normalizacion viajan con los tramos porque la exportacion
+        # de la cartera completa tiene que aplicar EXACTAMENTE los mismos. Recalcularlos
+        # sobre la cartera seria normalizar con datos que el modelo no vio al entrenar.
+        "media": media,
+        "desviacion": desviacion,
     }
+
+
+def exportar_prob_compra(spark, modelo, mes_validacion: str, largo: int, media, desviacion,
+                         destino, trozo: int = 40_000) -> int:
+    """Puntua la cartera COMPLETA del mes y escribe el parquet que consume la Fase 5.
+
+    Por que hace falta esto y no vale con el .npz que ya se guarda: `secuencia.py` solo
+    puntuaba a los clientes que contrataron algo (27.875), porque para medir MAP@7 los
+    demas no entran. Pero business.py construye una curva de captura sobre la cartera
+    entera -- "contactando al 5% de los clientes se alcanza el X% de las contrataciones"
+    no significa nada si solo se han puntuado los que iban a contratar. Hacen falta los
+    926.663.
+
+    Se escribe con el MISMO esquema que exporta recommend.py (ncodpers, prob_compra,
+    contrato, recomendados) para que business.py y la demo no tengan que saber de donde
+    vienen los numeros.
+
+    Se procesa con toLocalIterator y en trozos, no con collect(). La cartera completa son
+    casi un millon de Row de PySpark con cuarenta campos cada uno; traerlos todos a la vez
+    a memoria de Python es la forma mas rapida de tumbar el contenedor. toLocalIterator
+    trae una particion cada vez, y cada trozo se escribe como un fichero parquet suelto:
+    Spark lee igual de bien un directorio con muchas partes.
+
+    `prob_compra` es la probabilidad del mejor producto que el cliente AUN NO TIENE, con
+    los poseidos enmascarados antes de la softmax. El enmascarado no es opcional aqui: el
+    modelo se entreno con esa mascara puesta, asi que nunca aprendio a bajar por su cuenta
+    el logit de lo que ya se tiene. Sin ella, el producto mas probable de mucha gente
+    seria uno que ya tiene contratado.
+    """
+    import pandas as pd
+
+    datos = construir_secuencias(spark, mes_validacion, largo=largo)
+    cartera = datos.filter(F.col("fecha_dato") == mes_validacion).select(
+        "ncodpers", "n_altas",
+        "trayectoria", "trayectoria_altas", "trayectoria_bajas",
+        *ESTATICAS, *[f"prev_{p}" for p in PRODUCTOS],
+    )
+
+    destino.mkdir(parents=True, exist_ok=True)
+    # Restos de una ejecucion anterior: si no se borran, Spark leeria la union de las dos
+    # y saldrian clientes duplicados con probabilidades de modelos distintos.
+    for viejo in destino.glob("*.parquet"):
+        viejo.unlink()
+
+    estado = {"parte": 0, "total": 0}
+
+    def volcar(filas: list) -> None:
+        if not filas:
+            return
+        secuencias, estaticas, poseidos, _, _ = a_numpy(filas, largo=largo)
+        estaticas = ((estaticas - media) / desviacion).astype(np.float32)
+        probabilidades = puntuar_enmascarado(modelo, (secuencias, estaticas, poseidos))
+
+        # Los poseidos ya salen con probabilidad ~0 del enmascarado; ponerlos a -1 antes
+        # de ordenar evita que un empate a cero los cuele en el top 7.
+        ordenables = np.where(poseidos == 1, -1.0, probabilidades)
+        orden = np.argsort(-ordenables, axis=1)[:, :K]
+
+        pd.DataFrame({
+            "ncodpers": [f["ncodpers"] for f in filas],
+            "prob_compra": ordenables.max(axis=1).astype(float),
+            "contrato": [1 if (f["n_altas"] or 0) > 0 else 0 for f in filas],
+            "recomendados": [[PRODUCTOS[j] for j in fila] for fila in orden],
+        }).to_parquet(destino / f"part-{estado['parte']:05d}.parquet", index=False)
+
+        estado["parte"] += 1
+        estado["total"] += len(filas)
+        print(f"    ... {estado['total']:,} clientes puntuados", flush=True)
+
+    buffer: list = []
+    for fila in cartera.toLocalIterator():
+        buffer.append(fila)
+        if len(buffer) >= trozo:
+            volcar(buffer)
+            buffer = []
+    volcar(buffer)
+
+    return estado["total"]
 
 
 # --------------------------------------------------------------------------------------
@@ -774,6 +858,10 @@ def main() -> None:
     parser.add_argument("--lambda-aux", type=float, default=0.3,
                         help="Peso de la perdida auxiliar cuando --supervision todas")
     parser.add_argument("--semilla", type=int, default=42)
+    parser.add_argument("--exportar-parquet", action="store_true",
+                        help="Puntua la cartera COMPLETA con el mejor modelo y escribe "
+                             "data/export/prob_compra, que es lo que consumen business.py "
+                             "y la demo. Sin esto la capa de negocio se queda con XGBoost.")
     parser.add_argument("--distribuido", action="store_true",
                         help="Lanza el entrenamiento con TorchDistributor de Spark")
     args = parser.parse_args()
@@ -831,6 +919,7 @@ def main() -> None:
 
     resultados = {}
     probabilidades_por_modelo = {}
+    modelos_entrenados = {}
     for nombre in [m.strip() for m in args.modelos.split(",")]:
         if nombre not in arquitecturas:
             continue
@@ -865,6 +954,7 @@ def main() -> None:
         puntuacion = map_at_k(probabilidades, datos_val[2], reales)
 
         probabilidades_por_modelo[nombre] = probabilidades
+        modelos_entrenados[nombre] = modelo
         resultados[nombre] = puntuacion
         metricas[f"{nombre}_historial_perdida"] = historial
         metricas[f"{nombre}_segundos"] = round(segundos, 1)
@@ -925,6 +1015,20 @@ def main() -> None:
             **probabilidades_por_modelo,
         )
         print(f"\n  Probabilidades guardadas en {destino}")
+
+    # --- La cartera completa, para la capa de negocio -----------------------------------
+    if args.exportar_parquet and modelos_entrenados:
+        mejor = max(resultados, key=resultados.get)
+        print(f"\n  --- Exportando la cartera completa con '{mejor}' "
+              f"(MAP@7 {resultados[mejor]:.5f}) ---", flush=True)
+        with cronometro("exportar_prob_compra", metricas):
+            total = exportar_prob_compra(
+                spark, modelos_entrenados[mejor], args.mes_validacion, args.largo,
+                tramos["media"], tramos["desviacion"], DATA_EXPORT / "prob_compra",
+            )
+        metricas["modelo_exportado"] = mejor
+        metricas["clientes_exportados"] = total
+        print(f"  {total:,} clientes escritos en {DATA_EXPORT / 'prob_compra'}")
 
     guardar_metricas("secuencia_metrics.json", metricas)
     spark.stop()

@@ -237,9 +237,10 @@ def main() -> None:
     # --- Los datos, una vez ------------------------------------------------------------
     spark = crear_sesion("tuning")
     spark.sparkContext.setLogLevel("ERROR")
-    with cronometro("preparacion_spark", metricas):
-        tramos = preparar_tramos(spark, args.mes_validacion, LARGO_MAXIMO,
-                                 supervision=args.supervision)
+    # preparar_tramos ya se cronometra por dentro y escribe en el dict que se le pasa;
+    # envolverlo en otro cronometro solo duplicaba la linea de log.
+    tramos = preparar_tramos(spark, args.mes_validacion, LARGO_MAXIMO,
+                             supervision=args.supervision, metricas=metricas)
     # Spark ya no hace falta: liberar sus 9 GB antes de empezar a entrenar evita pelear
     # por la memoria del contenedor con los tensores de PyTorch.
     spark.stop()

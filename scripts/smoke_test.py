@@ -205,7 +205,12 @@ if __name__ == "__main__":
     # posicion no casca con clientes de historial corto (los que tienen relleno a la
     # izquierda son justo el caso limite) y que la busqueda de hiperparametros recorre el
     # ciclo entero: muestreo, entrenamiento, eleccion en el mes de parada y medicion.
-    ejecutar("secuencia.py", "--epocas", "2", "--dim", "16", "--lote", "128")
+    ejecutar("secuencia.py", "--epocas", "2", "--dim", "16", "--lote", "128",
+             "--exportar-parquet")
+    # business.py otra vez, ahora leyendo el prob_compra que acaba de escribir la red.
+    # Es la comprobacion de que el puente entre las dos fases encaja de verdad: mismo
+    # esquema, misma cobertura de clientes, y la curva de captura vuelve a salir.
+    ejecutar("business.py")
     ejecutar("tuning.py", "--configuraciones", "2", "--epocas-busqueda", "1",
              "--epocas-final", "2", "--semillas-finales", "1", "--fraccion-busqueda", "1.0")
     print("\n" + "=" * 70)
