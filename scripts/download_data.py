@@ -1,8 +1,9 @@
 """
 Descarga el dataset de Santander Product Recommendation desde Kaggle.
 
-Requiere credenciales de la API de Kaggle en ~/.kaggle/kaggle.json (en Windows,
-%USERPROFILE%\.kaggle\kaggle.json). Nunca se guardan en el repo.
+Requiere credenciales de la API de Kaggle, que pueden venir de tres sitios (ver
+comprobar_credenciales). Nunca se guardan dentro del repo: viven en ~/.kaggle, que en el
+contenedor se monta en modo solo lectura.
 
 Uso:
     python scripts/download_data.py
@@ -10,6 +11,7 @@ Uso:
 
 from __future__ import annotations
 
+import os
 import sys
 import zipfile
 from pathlib import Path
@@ -21,15 +23,34 @@ FICHERO_PRINCIPAL = "train_ver2.csv"
 
 
 def comprobar_credenciales() -> None:
-    ruta = Path.home() / ".kaggle" / "kaggle.json"
-    if ruta.exists():
+    """Acepta las dos formas de autenticacion que admite Kaggle.
+
+    Kaggle cambio el sistema: antes entregaba un kaggle.json con usuario y clave, y ahora
+    entrega un token que empieza por KGAT_. El cliente moderno entiende ambos, pero las
+    versiones antiguas del paquete solo entienden el kaggle.json -- de ahi que
+    requirements.txt pida kaggle>=1.7.4.
+    """
+    carpeta = Path.home() / ".kaggle"
+    vias = {
+        "variable de entorno KAGGLE_API_TOKEN": bool(os.environ.get("KAGGLE_API_TOKEN")),
+        f"{carpeta / 'access_token'} (token nuevo)": (carpeta / "access_token").exists(),
+        f"{carpeta / 'kaggle.json'} (clave heredada)": (carpeta / "kaggle.json").exists(),
+    }
+    encontrada = next((nombre for nombre, existe in vias.items() if existe), None)
+    if encontrada:
+        print(f"Credenciales encontradas en: {encontrada}")
         return
+
     sys.exit(
-        f"\nNo se encuentra {ruta}\n\n"
-        "Para crearlo:\n"
-        "  1. Entra en https://www.kaggle.com/settings\n"
-        "  2. Seccion 'API' -> 'Create New Token' (descarga un kaggle.json)\n"
-        f"  3. Guardalo en {ruta.parent}\n"
+        "\nNo se encuentran credenciales de Kaggle. Hay dos caminos:\n\n"
+        "  OPCION A -- token nuevo (el que empieza por KGAT_)\n"
+        "    1. https://www.kaggle.com/settings -> API Tokens -> Generate New Token\n"
+        f"    2. Guarda el token, y solo el token, en {carpeta / 'access_token'}\n\n"
+        "  OPCION B -- clave heredada (el kaggle.json de siempre)\n"
+        "    1. https://www.kaggle.com/settings -> 'Create Legacy API Key'\n"
+        f"    2. Mueve el kaggle.json descargado a {carpeta}\n\n"
+        "En ambos casos hay que aceptar las reglas de la competicion en\n"
+        f"  https://www.kaggle.com/c/{COMPETICION}/rules\n"
     )
 
 

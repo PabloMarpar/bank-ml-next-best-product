@@ -11,6 +11,8 @@ services:
       # asi que toda la memoria util es la del driver.
       SPARK_DRIVER_MEMORY: 12g
       SPARK_LOCAL_DIRS: /app/data/tmp_spark
+      # Se hereda del host si esta definida; si no, se usa ~/.kaggle montado arriba.
+      KAGGLE_API_TOKEN: ${KAGGLE_API_TOKEN:-}
     ports:
       # Spark UI: util para mirar los stages y el shuffle mientras corre un job.
       - "4040:4040"

@@ -1,6 +1,17 @@
 pyspark==3.5.3
-kaggle==1.6.17
+# No se fija version exacta a proposito: Kaggle cambio el sistema de autenticacion
+# (del kaggle.json con usuario+clave al token KGAT_ en ~/.kaggle/access_token) y las
+# versiones antiguas del cliente no entienden el formato nuevo.
+kaggle>=1.7.4
 pandas==2.2.3
 pyarrow==17.0.0
 matplotlib==3.9.2
 streamlit==1.39.0
+
+# XGBoost trae su propio estimador para Spark (xgboost.spark), que distribuye el
+# entrenamiento entre los ejecutores. Es el estandar de facto en datos tabulares y, a
+# diferencia del GBTClassifier de Spark, soporta multiclase de forma nativa.
+# xgboost.spark envuelve por dentro la API de scikit-learn, asi que scikit-learn es
+# dependencia obligatoria aunque aqui no se use directamente.
+xgboost==2.1.3
+scikit-learn==1.5.2

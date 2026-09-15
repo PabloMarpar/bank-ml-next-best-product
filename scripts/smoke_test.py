@@ -3,7 +3,7 @@ Prueba de humo del pipeline completo sobre un dataset sintetico diminuto.
 
 Genera un CSV con exactamente el mismo esquema y la misma suciedad que el real (espacios
 de relleno, "NA" como texto, el centinela -999999 en antiguedad) pero con unos pocos miles
-de filas, y ejecuta las cuatro fases encadenadas.
+de filas, y ejecuta todas las fases encadenadas.
 
 Sirve para dos cosas:
   * comprobar que la logica funciona sin esperar a un run de 20 minutos sobre 13,6M filas,
@@ -14,12 +14,26 @@ Sirve para dos cosas:
 Que esperar del resultado:
 
   * RECOMENDACION: los datos sinteticos llevan senal a proposito -- la probabilidad de
-    contratar depende del segmento, la edad y los productos que ya se tienen. El bosque
-    debe quedar por encima del baseline de popularidad. Si empata o pierde, hay algo roto.
+    contratar depende del segmento, la edad y los productos que ya se tienen. Los modelos
+    supervisados (bosque y XGBoost) deben quedar por encima del baseline de popularidad.
+    Si empatan o pierden, hay algo roto.
+
+  * EL HIBRIDO DEBE EMPEORAR AQUI, Y ESO ES CORRECTO. Los productos se generan de forma
+    independiente para cada cliente a partir de su segmento y su edad, sin ninguna
+    estructura de co-ocurrencia entre productos. O sea: en estos datos NO existe la senal
+    colaborativa que el ALS intenta capturar, asi que sus 16 vectores latentes son ruido
+    y lo unico que hacen es diluir las variables buenas. Si el hibrido "mejorase" aqui,
+    seria senal de que algo esta mal medido.
+
+    Sobre el dataset real la pregunta queda abierta: los clientes de banca si contratan
+    productos en combinaciones que se repiten, asi que ahi la senal colaborativa puede
+    existir de verdad. Se reportara lo que salga, gane o pierda.
 
   * BAJAS: aqui las bajas se generan con una probabilidad fija del 2%, sin depender de
     nada. No hay senal que aprender, asi que el AUC debe rondar 0,5. Esta fase solo
     comprueba que el codigo corre; su metrica sobre datos sinteticos no significa nada.
+    La calibracion si es medible aunque el modelo no prediga: el Brier score debe mejorar,
+    porque calibrar corrige la magnitud incluso de un modelo que no distingue.
 """
 
 from __future__ import annotations
@@ -181,8 +195,10 @@ if __name__ == "__main__":
     generar()
     ejecutar("ingest.py")
     ejecutar("features.py")
-    ejecutar("recommend.py", "--arboles", "20")
-    ejecutar("churn.py", "--arboles", "10", "--meses-entrenamiento", "6")
+    ejecutar("recommend.py", "--arboles", "25", "--profundidad", "6", "--exportar")
+    ejecutar("churn.py", "--arboles", "10", "--meses-entrenamiento", "4", "--exportar")
+    ejecutar("business.py")
+    ejecutar("leakage_check.py", "--arboles", "10", "--meses", "3")
     print("\n" + "=" * 70)
-    print("PRUEBA DE HUMO COMPLETA: las cuatro fases funcionan de principio a fin.")
+    print("PRUEBA DE HUMO COMPLETA: todas las fases funcionan de principio a fin.")
     print("=" * 70)
