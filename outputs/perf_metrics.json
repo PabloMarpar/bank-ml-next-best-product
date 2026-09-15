@@ -1,0 +1,54 @@
+{
+  "configuracion": {
+    "driver_memory": "9g",
+    "shuffle_partitions": "64",
+    "nucleos": 14
+  },
+  "formato": {
+    "csv_s": 20.94,
+    "parquet_s": 3.37,
+    "veces_mas_rapido": 6.2
+  },
+  "particionado": {
+    "filtro_particion_s": 1.28,
+    "filtro_columna_s": 3.54,
+    "plan": "+- FileScan parquet [ncodpers#529,ind_empleado#530,pais_residencia#531,sexo#532,age#533,fecha_alta#534,ind_nuevo#535,antiguedad#536,indrel#537,ult_fec_cli_1t#538,indrel_1mes#539,tiprel_1mes#540,indresi#541,indext#542,conyuemp#543,canal_entrada#544,indfall#545,tipodom#546,cod_prov#547,nomprov#548,ind"
+  },
+  "join": {
+    "sort_merge_s": 15.83,
+    "broadcast_s": 2.22,
+    "veces_mas_rapido": 7.1,
+    "filas_tabla_pequena": 53
+  },
+  "cache": {
+    "sin_cache_s": 19.9,
+    "con_cache_s": 8.8,
+    "veces_mas_rapido": 2.3
+  },
+  "sesgo": {
+    "n_particiones": 17,
+    "filas_max": 931453,
+    "filas_min": 625457,
+    "filas_media": 802783,
+    "ratio_max_media": 1.16
+  },
+  "filas_por_mes": {
+    "2015-01-28": 625457,
+    "2015-02-28": 627394,
+    "2015-03-28": 629209,
+    "2015-04-28": 630367,
+    "2015-05-28": 631957,
+    "2015-06-28": 632110,
+    "2015-07-28": 829817,
+    "2015-08-28": 843201,
+    "2015-09-28": 865440,
+    "2015-10-28": 892251,
+    "2015-11-28": 906109,
+    "2015-12-28": 912021,
+    "2016-01-28": 916269,
+    "2016-02-28": 920904,
+    "2016-03-28": 925076,
+    "2016-04-28": 928274,
+    "2016-05-28": 931453
+  }
+}

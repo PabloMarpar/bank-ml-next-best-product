@@ -1,0 +1,34 @@
+{
+  "mes_validacion": "2016-04-28",
+  "largo_secuencia": 12,
+  "epocas": 5,
+  "dim": 64,
+  "preparacion_spark": 175.72,
+  "ejemplos_entrenamiento": 492905,
+  "clientes_validacion": 26736,
+  "conversion_numpy": 15.12,
+  "memoria_secuencias_mb": 135.4,
+  "gru_historial_perdida": [
+    1.54534,
+    1.36986,
+    1.3318,
+    1.30936,
+    1.29647
+  ],
+  "gru_segundos": 115.8,
+  "transformer_historial_perdida": [
+    1.50483,
+    1.36486,
+    1.32842,
+    1.30572,
+    1.2918
+  ],
+  "transformer_segundos": 340.7,
+  "map7": {
+    "gru": 0.86228,
+    "transformer": 0.86897
+  },
+  "aporte_secuencia": 0.00809,
+  "aporte_secuencia_pct": 0.94,
+  "veredicto_secuencia": "El orden de la trayectoria SI aporta sobre el estado actual."
+}

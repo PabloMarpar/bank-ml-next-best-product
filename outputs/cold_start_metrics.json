@@ -1,0 +1,77 @@
+{
+  "mes_validacion": "2016-05-28",
+  "reparto_por_historia": {
+    "0": 1480,
+    "1": 680,
+    "2": 753,
+    "3": 970,
+    "4": 432,
+    "5": 383,
+    "6": 472,
+    "7": 415,
+    "8": 276,
+    "9": 814,
+    "10": 231,
+    "11": 243,
+    "12": 274,
+    "13": 310,
+    "14": 219,
+    "15": 19923
+  },
+  "pct_con_3_meses_o_menos": 13.93,
+  "modelo_completo": 229.69,
+  "modelo_demografico": 120.13,
+  "por_tramo": [
+    {
+      "tramo": "1 mes (recien llegado)",
+      "n": 2160,
+      "ganador": "completo",
+      "completo": 0.84037,
+      "demografico": 0.762,
+      "popularidad": 0.43948
+    },
+    {
+      "tramo": "2-3 meses",
+      "n": 1723,
+      "ganador": "completo",
+      "completo": 0.90844,
+      "demografico": 0.54635,
+      "popularidad": 0.44273
+    },
+    {
+      "tramo": "4-6 meses",
+      "n": 1287,
+      "ganador": "completo",
+      "completo": 0.87525,
+      "demografico": 0.67892,
+      "popularidad": 0.59103
+    },
+    {
+      "tramo": "7-11 meses",
+      "n": 1979,
+      "ganador": "completo",
+      "completo": 0.85404,
+      "demografico": 0.72384,
+      "popularidad": 0.61014
+    },
+    {
+      "tramo": "12+ meses (veterano)",
+      "n": 20726,
+      "ganador": "completo",
+      "completo": 0.85558,
+      "demografico": 0.73599,
+      "popularidad": 0.68739
+    }
+  ],
+  "regla_enrutado": {
+    "1 mes (recien llegado)": "completo",
+    "2-3 meses": "completo",
+    "4-6 meses": "completo",
+    "7-11 meses": "completo",
+    "12+ meses (veterano)": "completo"
+  },
+  "map_solo_completo": 0.85847,
+  "map_con_enrutado": 0.85847,
+  "ganancia_enrutado_pct": 0.0,
+  "conclusion": "El enrutado apenas aporta: el modelo completo ya se defiende solo en los clientes con poca historia, probablemente porque las variables demograficas que usa el modelo frio ya estan dentro de el. Es un resultado util igual: significa que no hace falta mantener un segundo modelo, y eso es una decision de arquitectura que conviene tomar con un numero delante."
+}

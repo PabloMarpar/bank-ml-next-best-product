@@ -1,0 +1,81 @@
+{
+  "curva_captura_ventas": [
+    {
+      "pct_cartera": 1.0,
+      "pct_cartera_real": 1.1,
+      "clientes_contactados": 10086,
+      "aciertos_capturados": 928,
+      "pct_capturado": 3.3,
+      "pct_capturado_azar": 1.1,
+      "multiplicador": 3.06
+    },
+    {
+      "pct_cartera": 2.0,
+      "pct_cartera_real": 2.1,
+      "clientes_contactados": 19407,
+      "aciertos_capturados": 2054,
+      "pct_capturado": 7.4,
+      "pct_capturado_azar": 2.1,
+      "multiplicador": 3.52
+    },
+    {
+      "pct_cartera": 5.0,
+      "pct_cartera_real": 5.1,
+      "clientes_contactados": 47117,
+      "aciertos_capturados": 4567,
+      "pct_capturado": 16.4,
+      "pct_capturado_azar": 5.1,
+      "multiplicador": 3.22
+    },
+    {
+      "pct_cartera": 10.0,
+      "pct_cartera_real": 10.1,
+      "clientes_contactados": 93461,
+      "aciertos_capturados": 9223,
+      "pct_capturado": 33.1,
+      "pct_capturado_azar": 10.1,
+      "multiplicador": 3.28
+    },
+    {
+      "pct_cartera": 20.0,
+      "pct_cartera_real": 20.1,
+      "clientes_contactados": 186084,
+      "aciertos_capturados": 13627,
+      "pct_capturado": 48.9,
+      "pct_capturado_azar": 20.1,
+      "multiplicador": 2.43
+    },
+    {
+      "pct_cartera": 50.0,
+      "pct_cartera_real": 50.0,
+      "clientes_contactados": 463784,
+      "aciertos_capturados": 19112,
+      "pct_capturado": 68.6,
+      "pct_capturado_azar": 50.0,
+      "multiplicador": 1.37
+    }
+  ],
+  "titular": "Contactando al 5% de la cartera (47,117 clientes) se alcanza el 16.4% de las contrataciones del mes, 3.22x lo que se conseguiria llamando al azar.",
+  "matriz_valor_riesgo": {
+    "RETENER PRIMERO": {
+      "clientes": 56851,
+      "pct": 6.1
+    },
+    "NO TOCAR": {
+      "clientes": 590921,
+      "pct": 63.8
+    },
+    "RETENER": {
+      "clientes": 142990,
+      "pct": 15.4
+    },
+    "VENDER": {
+      "clientes": 135901,
+      "pct": 14.7
+    }
+  },
+  "cortes": {
+    "compra": 0.6344725489616394,
+    "fuga": 0.016137862710848085
+  }
+}

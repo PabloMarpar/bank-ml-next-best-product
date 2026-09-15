@@ -1,0 +1,28 @@
+{
+  "csv_mb": 2186.5,
+  "count_csv": 15.93,
+  "filas": 13647309,
+  "escritura_parquet": 217.02,
+  "count_parquet": 1.79,
+  "filas_parquet": 13647309,
+  "parquet_mb": 197.2,
+  "particiones_mes": 17,
+  "ficheros_parquet": 17,
+  "recuento_nulos": 3.33,
+  "nulos_tras_casteo": {
+    "age": 27734,
+    "antiguedad": 27772,
+    "renta": 2794375,
+    "segmento": 189368,
+    "ind_nomina_ult1": 16063
+  },
+  "pct_nulos": {
+    "age": 0.2,
+    "antiguedad": 0.2,
+    "renta": 20.48,
+    "segmento": 1.39,
+    "ind_nomina_ult1": 0.12
+  },
+  "reduccion_tamano": 11.1,
+  "aceleracion_count": 8.9
+}

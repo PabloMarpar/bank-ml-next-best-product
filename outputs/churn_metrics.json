@@ -1,0 +1,287 @@
+{
+  "mes_validacion": "2016-05-28",
+  "supuestos_negocio": {
+    "coste_contacto_eur": 5.0,
+    "valor_retencion_eur": 120.0,
+    "tasa_exito_retencion": 0.3
+  },
+  "filas_entrenamiento": 7228621,
+  "filas_calibracion": 1230851,
+  "filas_validacion": 1233818,
+  "tasa_base_bajas": 0.02527,
+  "meses_entrenamiento": 6,
+  "entrenamiento_gbt": 703.43,
+  "prediccion": 50.42,
+  "auc": 0.8659,
+  "precision_media": 0.2623,
+  "mejora_sobre_tasa_base": 10.4,
+  "calibracion": {
+    "brier_crudo": 0.021766,
+    "brier_calibrado": 0.021295,
+    "mejora_brier_pct": 2.17,
+    "auc_antes": 0.8659,
+    "auc_despues": 0.8661,
+    "fiabilidad_cruda": [
+      {
+        "tramo": "0.0-0.1",
+        "n": 1150405,
+        "prometido": 0.0352,
+        "observado": 0.0131
+      },
+      {
+        "tramo": "0.1-0.2",
+        "n": 52349,
+        "prometido": 0.141,
+        "observado": 0.1227
+      },
+      {
+        "tramo": "0.2-0.3",
+        "n": 23331,
+        "prometido": 0.241,
+        "observado": 0.2531
+      },
+      {
+        "tramo": "0.3-0.4",
+        "n": 5660,
+        "prometido": 0.3341,
+        "observado": 0.3809
+      },
+      {
+        "tramo": "0.4-0.5",
+        "n": 412,
+        "prometido": 0.435,
+        "observado": 0.5898
+      },
+      {
+        "tramo": "0.5-0.6",
+        "n": 653,
+        "prometido": 0.5511,
+        "observado": 0.827
+      },
+      {
+        "tramo": "0.6-0.7",
+        "n": 482,
+        "prometido": 0.6448,
+        "observado": 0.8237
+      },
+      {
+        "tramo": "0.7-0.8",
+        "n": 168,
+        "prometido": 0.7639,
+        "observado": 0.8869
+      },
+      {
+        "tramo": "0.8-0.9",
+        "n": 260,
+        "prometido": 0.8552,
+        "observado": 0.9346
+      },
+      {
+        "tramo": "0.9-1.0",
+        "n": 98,
+        "prometido": 0.9184,
+        "observado": 1.0
+      }
+    ],
+    "fiabilidad_calibrada": [
+      {
+        "tramo": "0.0-0.1",
+        "n": 1149362,
+        "prometido": 0.0128,
+        "observado": 0.013
+      },
+      {
+        "tramo": "0.1-0.2",
+        "n": 55001,
+        "prometido": 0.1614,
+        "observado": 0.1243
+      },
+      {
+        "tramo": "0.2-0.3",
+        "n": 15041,
+        "prometido": 0.2313,
+        "observado": 0.2397
+      },
+      {
+        "tramo": "0.3-0.4",
+        "n": 11620,
+        "prometido": 0.3273,
+        "observado": 0.3311
+      },
+      {
+        "tramo": "0.4-0.5",
+        "n": 762,
+        "prometido": 0.4182,
+        "observado": 0.4186
+      },
+      {
+        "tramo": "0.5-0.6",
+        "n": 362,
+        "prometido": 0.5353,
+        "observado": 0.616
+      },
+      {
+        "tramo": "0.6-0.7",
+        "n": 854,
+        "prometido": 0.6664,
+        "observado": 0.8326
+      },
+      {
+        "tramo": "0.7-0.8",
+        "n": 336,
+        "prometido": 0.7359,
+        "observado": 0.7946
+      },
+      {
+        "tramo": "0.8-0.9",
+        "n": 188,
+        "prometido": 0.8634,
+        "observado": 0.9043
+      },
+      {
+        "tramo": "0.9-1.0",
+        "n": 292,
+        "prometido": 0.9842,
+        "observado": 0.9726
+      }
+    ],
+    "escalones_isotonica": 156,
+    "deriva_auc": 0.0002
+  },
+  "busqueda_umbral": 5.98,
+  "umbral_sin_calibrar": {
+    "umbral": 0.19,
+    "contactados": 35244,
+    "bajas_capturadas": 10398,
+    "beneficio_estimado": 198108.0
+  },
+  "umbral_elegido": {
+    "umbral": 0.19,
+    "contactados": 33566,
+    "bajas_capturadas": 10161,
+    "beneficio_estimado": 197966.0
+  },
+  "curva_umbral": [
+    {
+      "umbral": 0.01,
+      "contactados": 819461,
+      "bajas_capturadas": 30345,
+      "beneficio_estimado": -3004885.0
+    },
+    {
+      "umbral": 0.06,
+      "contactados": 124965,
+      "bajas_capturadas": 18836,
+      "beneficio_estimado": 53271.0
+    },
+    {
+      "umbral": 0.11,
+      "contactados": 83266,
+      "bajas_capturadas": 16142,
+      "beneficio_estimado": 164782.0
+    },
+    {
+      "umbral": 0.16,
+      "contactados": 66474,
+      "bajas_capturadas": 14573,
+      "beneficio_estimado": 192258.0
+    },
+    {
+      "umbral": 0.21,
+      "contactados": 29455,
+      "bajas_capturadas": 9426,
+      "beneficio_estimado": 192061.0
+    },
+    {
+      "umbral": 0.26,
+      "contactados": 16108,
+      "bajas_capturadas": 6243,
+      "beneficio_estimado": 144208.0
+    },
+    {
+      "umbral": 0.31,
+      "contactados": 14414,
+      "bajas_capturadas": 5821,
+      "beneficio_estimado": 137486.0
+    },
+    {
+      "umbral": 0.36,
+      "contactados": 4505,
+      "bajas_capturadas": 2733,
+      "beneficio_estimado": 75863.0
+    },
+    {
+      "umbral": 0.41,
+      "contactados": 2794,
+      "bajas_capturadas": 1974,
+      "beneficio_estimado": 57094.0
+    },
+    {
+      "umbral": 0.46,
+      "contactados": 2036,
+      "bajas_capturadas": 1657,
+      "beneficio_estimado": 49472.0
+    },
+    {
+      "umbral": 0.51,
+      "contactados": 2012,
+      "bajas_capturadas": 1644,
+      "beneficio_estimado": 49124.0
+    },
+    {
+      "umbral": 0.56,
+      "contactados": 1671,
+      "bajas_capturadas": 1432,
+      "beneficio_estimado": 43197.0
+    },
+    {
+      "umbral": 0.61,
+      "contactados": 1670,
+      "bajas_capturadas": 1432,
+      "beneficio_estimado": 43202.0
+    },
+    {
+      "umbral": 0.66,
+      "contactados": 1639,
+      "bajas_capturadas": 1415,
+      "beneficio_estimado": 42745.0
+    },
+    {
+      "umbral": 0.71,
+      "contactados": 699,
+      "bajas_capturadas": 624,
+      "beneficio_estimado": 18969.0
+    },
+    {
+      "umbral": 0.76,
+      "contactados": 644,
+      "bajas_capturadas": 585,
+      "beneficio_estimado": 17840.0
+    },
+    {
+      "umbral": 0.81,
+      "contactados": 480,
+      "bajas_capturadas": 454,
+      "beneficio_estimado": 13944.0
+    },
+    {
+      "umbral": 0.86,
+      "contactados": 371,
+      "bajas_capturadas": 353,
+      "beneficio_estimado": 10853.0
+    },
+    {
+      "umbral": 0.91,
+      "contactados": 292,
+      "bajas_capturadas": 284,
+      "beneficio_estimado": 8764.0
+    },
+    {
+      "umbral": 0.96,
+      "contactados": 266,
+      "bajas_capturadas": 261,
+      "beneficio_estimado": 8066.0
+    }
+  ],
+  "campana_rentable": true
+}

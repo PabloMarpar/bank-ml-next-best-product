@@ -1,0 +1,9 @@
+{
+  "auc_limpio": 0.9378985330760682,
+  "auc_con_fuga": 0.9999999999999999,
+  "salto": 0.0621,
+  "margen_que_cierra_la_fuga": 1.0,
+  "producto": "ind_cno_fin_ult1",
+  "tasa_base": 0.00253,
+  "veredicto": "CORRECTO. El modelo con fuga alcanza un AUC de 1.0000 y elimina el 100% del error que le quedaba al modelo limpio. Es justo lo que se esperaba: la columna del mes actual contiene la respuesta. Que el modelo limpio se quede por debajo confirma que el pipeline real no esta usando informacion del futuro."
+}

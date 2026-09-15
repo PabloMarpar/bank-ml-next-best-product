@@ -1,0 +1,13 @@
+{
+  "mes_validacion": "2016-05-28",
+  "objetivo": "rank:ndcg",
+  "negativos_por_grupo": 6,
+  "arboles": 100,
+  "profundidad": 8,
+  "ranker_ndcg": 791.04,
+  "map7_ranker": 0.85173,
+  "map7_clasificador": 0.86088,
+  "mejora": -0.00915,
+  "mejora_pct": -1.06,
+  "veredicto": "Optimizar el orden directamente NO mejora aqui. El clasificador multiclase ya ordenaba bien al ordenar por probabilidad, y el ranker paga dos peajes: solo puede entrenar con grupos que tienen algun positivo, y el muestreo de negativos le quita parte del contexto."
+}

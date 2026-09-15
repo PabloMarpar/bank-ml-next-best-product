@@ -1,0 +1,48 @@
+{
+  "mes_validacion": "2016-05-28",
+  "k": 7,
+  "rank_als": 16,
+  "enfoques": [
+    "popularidad",
+    "als",
+    "bosque",
+    "xgboost",
+    "hibrido"
+  ],
+  "clientes_validacion": 926663,
+  "clientes_con_alta": 27875,
+  "pct_clientes_con_alta": 3.01,
+  "popularidad": 82.78,
+  "ranking_popularidad": [
+    "ind_recibo_ult1",
+    "ind_nom_pens_ult1",
+    "ind_nomina_ult1",
+    "ind_cco_fin_ult1",
+    "ind_tjcr_fin_ult1",
+    "ind_cno_fin_ult1",
+    "ind_ecue_fin_ult1"
+  ],
+  "als_entrenamiento": 506.33,
+  "als_cobertura": {
+    "senal": "posesion",
+    "clientes_con_vector": 724191,
+    "cobertura_entrenamiento": 99.2,
+    "cobertura_validacion": 76.5,
+    "desajuste": 22.7
+  },
+  "als_evaluacion": 113.4,
+  "bosque": 409.44,
+  "xgboost": 342.99,
+  "hibrido": 458.48,
+  "map7": {
+    "popularidad": 0.64313,
+    "als": 0.52825,
+    "bosque": 0.83319,
+    "xgboost": 0.86088,
+    "hibrido": 0.86059
+  },
+  "mejor": "xgboost",
+  "aporte_factores_als": -0.00029,
+  "aporte_factores_als_pct": -0.03,
+  "enfoque_exportado": "xgboost"
+}

@@ -1,0 +1,53 @@
+{
+  "meses_entrenamiento": 4,
+  "horizonte_meses": 6,
+  "entrenar_congelado": 412.07,
+  "curva": [
+    {
+      "mes_idx": 6,
+      "meses_desde_entrenamiento": 1,
+      "auc_congelado": 0.8436,
+      "auc_reentrenado": 0.8508,
+      "coste_de_no_reentrenar": 0.0072
+    },
+    {
+      "mes_idx": 7,
+      "meses_desde_entrenamiento": 2,
+      "auc_congelado": 0.8579,
+      "auc_reentrenado": 0.8609,
+      "coste_de_no_reentrenar": 0.003
+    },
+    {
+      "mes_idx": 8,
+      "meses_desde_entrenamiento": 3,
+      "auc_congelado": 0.8404,
+      "auc_reentrenado": 0.8485,
+      "coste_de_no_reentrenar": 0.0081
+    },
+    {
+      "mes_idx": 9,
+      "meses_desde_entrenamiento": 4,
+      "auc_congelado": 0.841,
+      "auc_reentrenado": 0.8546,
+      "coste_de_no_reentrenar": 0.0136
+    },
+    {
+      "mes_idx": 10,
+      "meses_desde_entrenamiento": 5,
+      "auc_congelado": 0.8414,
+      "auc_reentrenado": 0.8587,
+      "coste_de_no_reentrenar": 0.0173
+    },
+    {
+      "mes_idx": 11,
+      "meses_desde_entrenamiento": 6,
+      "auc_congelado": 0.8393,
+      "auc_reentrenado": 0.8077,
+      "coste_de_no_reentrenar": -0.0317
+    }
+  ],
+  "caida_auc_total": 0.0043,
+  "caida_auc_por_mes": 0.00086,
+  "coste_medio_de_no_reentrenar": 0.00292,
+  "recomendacion": "Reentrenar cada 4 meses. A partir de ahi, no hacerlo cuesta mas de 0.01 de AUC, que ya se nota en el orden de la lista de llamadas."
+}

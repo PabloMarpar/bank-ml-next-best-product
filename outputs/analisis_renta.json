@@ -1,0 +1,28 @@
+{
+  "muestra": 0.12,
+  "filas_analizadas": 1639912,
+  "pct_renta_ausente": 20.46,
+  "auc_prediccion_ausencia": 0.7631,
+  "variables_que_explican_la_ausencia": {
+    "nomprov": 0.7379,
+    "antiguedad": 0.143,
+    "canal_entrada": 0.0645,
+    "age": 0.0161,
+    "n_productos": 0.0116,
+    "ind_nuevo": 0.0105
+  },
+  "veredicto_ausencia": "NO es aleatoria (AUC 0.763). Que a un cliente le falte la renta se puede predecir a partir del resto de su ficha, asi que el hueco es un dato en si mismo. Esto justifica guardar el indicador de ausencia como variable del modelo principal, en vez de taparlo imputando y ya esta.",
+  "diagnostico_ausencia": 333.55,
+  "imputacion": {
+    "mediana_eur": 101759.85,
+    "rmse_mediana": 220387.9,
+    "mae_mediana": 66064.0,
+    "rmse_modelo": 214164.86,
+    "mae_modelo": 63934.64,
+    "mejora_rmse_pct": 2.82,
+    "mejora_mae_pct": 3.22,
+    "mae_modelo_sobre_renta_media_pct": 47.5
+  },
+  "conclusion_imputacion": "No compensa. El modelo apenas mejora a la mediana, asi que la mediana con su indicador de ausencia es la opcion correcta: mas simple, mas robusta y sin un modelo extra que mantener y que se puede desajustar sin avisar.",
+  "comparar_imputaciones": 313.72
+}

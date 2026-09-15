@@ -1,0 +1,24 @@
+{
+  "mes_validacion": "2016-05-28",
+  "amortiguacion": 60.0,
+  "xgboost_pesos": 333.88,
+  "xgboost_test": 327.37,
+  "busqueda_pesos": 19.38,
+  "pesos_elegidos": {
+    "popularidad": 0.0,
+    "xgboost": 0.0,
+    "gru": 0.1,
+    "transformer": 0.9
+  },
+  "map_mezcla_en_mes_de_pesos": 0.86898,
+  "map7_final": {
+    "popularidad": 0.64302,
+    "xgboost": 0.85783,
+    "gru": 0.8826,
+    "transformer": 0.88638,
+    "mezcla": 0.88638
+  },
+  "aporte_mezcla": 0.0,
+  "aporte_mezcla_pct": 0.0,
+  "veredicto": "La mezcla NO aporta (+0.00000 MAP). Los modelos aciertan en los mismos clientes, asi que combinarlos no anade informacion -- solo complejidad de mantenimiento. Conviene quedarse con el mejor modelo suelto."
+}
