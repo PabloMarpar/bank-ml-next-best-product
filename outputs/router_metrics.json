@@ -1,0 +1,233 @@
+{
+  "mes_validacion": "2016-05-28",
+  "xgboost_decision": 304.71,
+  "xgboost_test": 315.54,
+  "modelos": {
+    "gru": 0.90157,
+    "transformer": 0.90299,
+    "xgboost": 0.85783,
+    "popularidad": 0.64302
+  },
+  "mejor_global": "transformer",
+  "segmentaciones": {
+    "historia": {
+      "regla": {
+        "1 mes": "xgboost",
+        "2-3": "transformer",
+        "4-6": "transformer",
+        "7-11": "gru",
+        "12+": "transformer"
+      },
+      "map_enrutado": 0.90355,
+      "map_mejor_suelto": 0.90299,
+      "ganancia_pct": 0.061,
+      "segmentos_que_cambian_de_ganador": 0,
+      "segmentos_totales": 5,
+      "tabla_decision": [
+        {
+          "segmento": "1 mes",
+          "n": 2466,
+          "gru": 0.8155,
+          "transformer": 0.811,
+          "xgboost": 0.82558,
+          "popularidad": 0.42604,
+          "ganador": "xgboost"
+        },
+        {
+          "segmento": "2-3",
+          "n": 1461,
+          "gru": 0.8655,
+          "transformer": 0.86754,
+          "xgboost": 0.86302,
+          "popularidad": 0.44655,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "4-6",
+          "n": 1426,
+          "gru": 0.85326,
+          "transformer": 0.85359,
+          "xgboost": 0.84239,
+          "popularidad": 0.56631,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "7-11",
+          "n": 1806,
+          "gru": 0.8436,
+          "transformer": 0.83821,
+          "xgboost": 0.81719,
+          "popularidad": 0.55403,
+          "ganador": "gru"
+        },
+        {
+          "segmento": "12+",
+          "n": 19577,
+          "gru": 0.9018,
+          "transformer": 0.90233,
+          "xgboost": 0.84191,
+          "popularidad": 0.67038,
+          "ganador": "transformer"
+        }
+      ],
+      "tabla_test": [
+        {
+          "segmento": "1 mes",
+          "n": 2160,
+          "gru": 0.83209,
+          "transformer": 0.83188,
+          "xgboost": 0.83898,
+          "popularidad": 0.43948,
+          "ganador": "xgboost"
+        },
+        {
+          "segmento": "2-3",
+          "n": 1723,
+          "gru": 0.91296,
+          "transformer": 0.91344,
+          "xgboost": 0.9076,
+          "popularidad": 0.44273,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "4-6",
+          "n": 1287,
+          "gru": 0.88771,
+          "transformer": 0.89099,
+          "xgboost": 0.87572,
+          "popularidad": 0.59103,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "7-11",
+          "n": 1979,
+          "gru": 0.87323,
+          "transformer": 0.87318,
+          "xgboost": 0.85426,
+          "popularidad": 0.61021,
+          "ganador": "gru"
+        },
+        {
+          "segmento": "12+",
+          "n": 20726,
+          "gru": 0.91143,
+          "transformer": 0.91313,
+          "xgboost": 0.85488,
+          "popularidad": 0.68725,
+          "ganador": "transformer"
+        }
+      ]
+    },
+    "n_productos": {
+      "regla": {
+        "0": "gru",
+        "1": "transformer",
+        "2-3": "transformer",
+        "4-5": "transformer",
+        "6+": "gru"
+      },
+      "map_enrutado": 0.90315,
+      "map_mejor_suelto": 0.90299,
+      "ganancia_pct": 0.017,
+      "segmentos_que_cambian_de_ganador": 1,
+      "segmentos_totales": 5,
+      "tabla_decision": [
+        {
+          "segmento": "0",
+          "n": 2456,
+          "gru": 0.91399,
+          "transformer": 0.91063,
+          "xgboost": 0.88442,
+          "popularidad": 0.27784,
+          "ganador": "gru"
+        },
+        {
+          "segmento": "1",
+          "n": 8555,
+          "gru": 0.85997,
+          "transformer": 0.86,
+          "xgboost": 0.83051,
+          "popularidad": 0.66952,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "2-3",
+          "n": 9316,
+          "gru": 0.87972,
+          "transformer": 0.88011,
+          "xgboost": 0.81781,
+          "popularidad": 0.63696,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "4-5",
+          "n": 4417,
+          "gru": 0.90966,
+          "transformer": 0.91046,
+          "xgboost": 0.85365,
+          "popularidad": 0.65801,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "6+",
+          "n": 1992,
+          "gru": 0.9313,
+          "transformer": 0.92818,
+          "xgboost": 0.89839,
+          "popularidad": 0.69515,
+          "ganador": "gru"
+        }
+      ],
+      "tabla_test": [
+        {
+          "segmento": "0",
+          "n": 2416,
+          "gru": 0.90166,
+          "transformer": 0.89862,
+          "xgboost": 0.86324,
+          "popularidad": 0.27599,
+          "ganador": "gru"
+        },
+        {
+          "segmento": "1",
+          "n": 8670,
+          "gru": 0.87628,
+          "transformer": 0.87764,
+          "xgboost": 0.85036,
+          "popularidad": 0.68093,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "2-3",
+          "n": 10131,
+          "gru": 0.90696,
+          "transformer": 0.90892,
+          "xgboost": 0.84902,
+          "popularidad": 0.6669,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "4-5",
+          "n": 4580,
+          "gru": 0.91836,
+          "transformer": 0.92106,
+          "xgboost": 0.86672,
+          "popularidad": 0.6845,
+          "ganador": "transformer"
+        },
+        {
+          "segmento": "6+",
+          "n": 2078,
+          "gru": 0.94369,
+          "transformer": 0.94517,
+          "xgboost": 0.90603,
+          "popularidad": 0.70379,
+          "ganador": "transformer"
+        }
+      ]
+    }
+  },
+  "mejor_segmentacion": "historia",
+  "ganancia_maxima_pct": 0.061,
+  "veredicto": "El enrutado aporta +0.06%, demasiado poco para justificar mantener varios modelos, reentrenarlos y decidir cual atiende a quien. La decision correcta es quedarse solo con transformer."
+}

@@ -199,6 +199,15 @@ if __name__ == "__main__":
     ejecutar("churn.py", "--arboles", "10", "--meses-entrenamiento", "4", "--exportar")
     ejecutar("business.py")
     ejecutar("leakage_check.py", "--arboles", "10", "--meses", "3")
+    # Las fases de red neuronal, con todo al minimo. No se mira la metrica: sobre 1.500
+    # clientes y dos epocas no significa nada. Lo que se comprueba es que el tensor de
+    # secuencias se construye con las dimensiones correctas, que la supervision por
+    # posicion no casca con clientes de historial corto (los que tienen relleno a la
+    # izquierda son justo el caso limite) y que la busqueda de hiperparametros recorre el
+    # ciclo entero: muestreo, entrenamiento, eleccion en el mes de parada y medicion.
+    ejecutar("secuencia.py", "--epocas", "2", "--dim", "16", "--lote", "128")
+    ejecutar("tuning.py", "--configuraciones", "2", "--epocas-busqueda", "1",
+             "--epocas-final", "2", "--semillas-finales", "1", "--fraccion-busqueda", "1.0")
     print("\n" + "=" * 70)
     print("PRUEBA DE HUMO COMPLETA: todas las fases funcionan de principio a fin.")
     print("=" * 70)

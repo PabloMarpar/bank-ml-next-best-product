@@ -1,34 +1,105 @@
 {
-  "mes_validacion": "2016-04-28",
+  "mes_validacion": "2016-05-28",
   "largo_secuencia": 12,
-  "epocas": 5,
+  "epocas": 10,
   "dim": 64,
-  "preparacion_spark": 175.72,
+  "preparacion_spark": 452.04,
   "ejemplos_entrenamiento": 492905,
-  "clientes_validacion": 26736,
-  "conversion_numpy": 15.12,
-  "memoria_secuencias_mb": 135.4,
+  "clientes_parada": 26736,
+  "clientes_validacion": 27875,
+  "conversion_numpy": 27.49,
+  "memoria_secuencias_mb": 406.1,
   "gru_historial_perdida": [
-    1.54534,
-    1.36986,
-    1.3318,
-    1.30936,
-    1.29647
+    {
+      "perdida": 1.18561,
+      "map_parada": 0.8772
+    },
+    {
+      "perdida": 1.07701,
+      "map_parada": 0.88107
+    },
+    {
+      "perdida": 1.0592,
+      "map_parada": 0.88053
+    },
+    {
+      "perdida": 1.04806,
+      "map_parada": 0.88311
+    },
+    {
+      "perdida": 1.04078,
+      "map_parada": 0.88563
+    },
+    {
+      "perdida": 1.03425,
+      "map_parada": 0.88495
+    },
+    {
+      "perdida": 1.03018,
+      "map_parada": 0.88632
+    },
+    {
+      "perdida": 1.026,
+      "map_parada": 0.88659
+    },
+    {
+      "perdida": 1.02367,
+      "map_parada": 0.88674
+    },
+    {
+      "perdida": 1.02173,
+      "map_parada": 0.88658
+    }
   ],
-  "gru_segundos": 115.8,
+  "gru_segundos": 268.4,
   "transformer_historial_perdida": [
-    1.50483,
-    1.36486,
-    1.32842,
-    1.30572,
-    1.2918
+    {
+      "perdida": 1.15503,
+      "map_parada": 0.87568
+    },
+    {
+      "perdida": 1.08006,
+      "map_parada": 0.88005
+    },
+    {
+      "perdida": 1.06667,
+      "map_parada": 0.88227
+    },
+    {
+      "perdida": 1.0579,
+      "map_parada": 0.8836
+    },
+    {
+      "perdida": 1.05032,
+      "map_parada": 0.88524
+    },
+    {
+      "perdida": 1.04375,
+      "map_parada": 0.88599
+    },
+    {
+      "perdida": 1.03733,
+      "map_parada": 0.88608
+    },
+    {
+      "perdida": 1.03215,
+      "map_parada": 0.88754
+    },
+    {
+      "perdida": 1.02814,
+      "map_parada": 0.88714
+    },
+    {
+      "perdida": 1.0251,
+      "map_parada": 0.88773
+    }
   ],
-  "transformer_segundos": 340.7,
+  "transformer_segundos": 739.3,
   "map7": {
-    "gru": 0.86228,
-    "transformer": 0.86897
+    "gru": 0.90157,
+    "transformer": 0.90299
   },
-  "aporte_secuencia": 0.00809,
-  "aporte_secuencia_pct": 0.94,
+  "aporte_secuencia": 0.04211,
+  "aporte_secuencia_pct": 4.89,
   "veredicto_secuencia": "El orden de la trayectoria SI aporta sobre el estado actual."
 }
