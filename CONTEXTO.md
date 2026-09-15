@@ -40,7 +40,32 @@ Ojo al comparar: el MAP puede moverse por **dos** causas a la vez, no solo por e
 stopping. El tramo de entrenamiento ahora filtra `mes_idx < mes_parada` (antes llegaba
 hasta t-1), así que también **pierde un mes de datos**.
 
-### Tanda en ejecución: `scripts/cuarta_tanda.sh`
+### Segundo bug encontrado y arreglado: el early stopping no medía nada
+
+La primera cuarta tanda se abortó a los 20 min al ver `MAP parada 0.0` en todas las épocas.
+Causa: `datos_parada = a_numpy(filas_parada)` se construye **sin** `con_objetivo=True` (un
+cliente puede contratar varios productos el mismo mes, así que no hay objetivo único), por
+lo que sus `objetivos` son todos `-1`. `_map_validacion` comparaba contra esa columna y
+devolvía siempre 0.
+
+El efecto no era que el early stopping no ayudara: **cortaba el entrenamiento**. Con
+`mejor_map = -1.0`, la época 1 fijaba el máximo en 0.0, ninguna posterior lo superaba, y a
+las 2 épocas paraba devolviendo los pesos de la primera. El GRU entrenó 3 épocas de 10 y
+devolvió el estado de la 1.
+
+Arreglado: `_map_validacion` mide contra `reales` reutilizando `map_at_k`, la misma función
+con la que se publica el resultado final. Más una guarda que avisa si el MAP de parada sale
+exactamente 0 en la primera época. Commit `96a73c4`.
+
+### Tercer hallazgo: el refactor a medias traía más cambios de los documentados
+
+La secuencia ya no tiene 1 canal sino **3** (`CANALES = 3`: estado / altas / bajas por mes).
+Se ve en el log: 377 MB de secuencias frente a 135 MB, y la pérdida arranca en 1.20 en vez
+de 1.54. **Los 0.8864 / 0.8826 de la tabla de abajo son con UN canal.** Los nuevos números
+no son comparables uno a uno con los viejos: cambian a la vez el nº de canales, el mes de
+entrenamiento que se pierde y el early stopping.
+
+### Tanda en ejecución: `scripts/cuarta_tanda.sh` (segundo lanzamiento)
 Lanzada a las 20:50. Cuatro pasos, secuenciales, ~60-90 min:
 
 1. `secuencia.py --mes-validacion 2016-04-28 --epocas 10 --dim 64` → `logs/secuencia_abril.log`
@@ -56,6 +81,35 @@ re-ejecución sale peor y hay que comparar) en `%TEMP%\nbp_backup_pre_cuarta`: l
 ¿Ensemble o router superan al Transformer solo? Si la respuesta es no en ambos —que es lo
 esperable— el plan acordado con el usuario es **dejar de añadir modelos encima y mejorar el
 Transformer por dentro**, y solo después cerrar el resto del proyecto.
+
+
+### Plan acordado con el usuario para lo que viene después
+
+Si ensemble y router no superan al Transformer solo (lo esperable), el encargo es
+**exprimir el Transformer y hacerlo lo mejor posible** antes de cerrar el proyecto, con
+todas las buenas prácticas de optimización de hiperparámetros. El plan:
+
+**Mejoras de modelo**
+1. Supervisar TODAS las posiciones de la secuencia, no solo la última (ver hallazgo 13).
+   El objetivo de cada posición j es el canal de altas de la posición j+1, que ya está
+   dentro del tensor de entrada — no hace falta tocar la parte de Spark.
+2. Pérdida BCE multi-etiqueta en vez de `explode` + cross-entropy: un cliente que contrata
+   3 productos deja de ser 3 filas idénticas con un objetivo cada una.
+3. Atar pesos (weight tying) entre la proyección de entrada y la capa de salida, como en
+   SASRec: menos parámetros y mejor generalización.
+4. Fusionar las variables estáticas en cada posición, no solo al final.
+5. Probar secuencias más largas (`LARGO_SECUENCIA` 12 → hasta 16, que es todo el histórico).
+
+**Búsqueda de hiperparámetros** (`src/tuning.py`, por escribir)
+6. Búsqueda aleatoria sobre dim, capas, cabezas, dropout, lr, weight_decay y tamaño de
+   lote, **toda ella medida en el mes de parada**. El mes de test se toca UNA vez, al
+   final, con la configuración ya elegida. Cualquier otra cosa es elegir mirando la
+   respuesta.
+7. Calentamiento de learning rate + coseno (ahora solo hay coseno).
+8. Varias semillas para separar mejora real de ruido de inicialización.
+
+**Regla que no se rompe:** ningún hiperparámetro se elige mirando el mes de test. Se elige
+en t-1 y se aplica a ciegas en t.
 
 ## Estado actual (última actualización: 2026-09-15, segunda sesión — fix de fuga + cuarta tanda)
 
