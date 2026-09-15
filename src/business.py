@@ -174,9 +174,19 @@ def matriz_valor_riesgo(df, umbral_compra: float, umbral_fuga: float) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Traduce las predicciones a plan comercial")
-    parser.add_argument("--umbral-compra", type=float, default=0.5,
+    # 0,80 y no 0,50, que fue la primera version y estaba mal pensada.
+    #
+    # Partir por la mediana significa declarar "riesgo alto" a la mitad peor de la
+    # cartera por definicion. Con eso salia el 75% de los clientes marcados para
+    # retencion, y eso no es un plan: ningun equipo comercial puede retener a tres
+    # cuartas partes de su cartera. El cuadrante dejaba de decidir nada.
+    #
+    # El corte tiene que atarse a la CAPACIDAD de la campana, no a la forma de la
+    # distribucion. Con 0,80 el cuarto superior es "alto", que ya se parece al orden de
+    # magnitud de a cuanta gente se puede llamar de verdad en un mes.
+    parser.add_argument("--umbral-compra", type=float, default=0.80,
                         help="Percentil de propension de compra que separa alto de bajo")
-    parser.add_argument("--umbral-fuga", type=float, default=0.5)
+    parser.add_argument("--umbral-fuga", type=float, default=0.80)
     args = parser.parse_args()
 
     spark = crear_sesion("negocio")

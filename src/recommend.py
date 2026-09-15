@@ -209,19 +209,41 @@ def predecir_popularidad(validacion, ranking: list[str]):
 # --------------------------------------------------------------------------------------
 # 2. ALS (filtrado colaborativo)
 # --------------------------------------------------------------------------------------
-def entrenar_als(entrenamiento, rank: int = RANK_ALS, semilla: int = 42):
-    """Entrena ALS sobre el historico de altas y devuelve el modelo.
+def entrenar_als(entrenamiento, rank: int = RANK_ALS, semilla: int = 42,
+                 senal: str = "posesion"):
+    """Entrena ALS y devuelve el modelo.
 
-    Feedback implicito: no hay valoraciones, solo el hecho de que alguien contrato algo.
-    implicitPrefs=True le dice a ALS que interprete la ausencia como "no observado" y no
-    como "no le gusta", que es la lectura correcta -- que un cliente no tenga hipoteca no
-    significa que la rechazara.
+    Feedback implicito: no hay valoraciones, solo el hecho de que alguien tenga o
+    contrate un producto. implicitPrefs=True le dice a ALS que interprete la ausencia
+    como "no observado" y no como "no le gusta", que es la lectura correcta -- que un
+    cliente no tenga hipoteca no significa que la rechazara.
+
+    El parametro `senal` decide sobre que se entrena, y no es un detalle menor:
+
+      "alta"      solo los productos que el cliente contrato durante el periodo. Es lo
+                  mas parecido al objetivo, pero deja sin vector a todo el que no
+                  contrato nada -- que es la inmensa mayoria de la cartera.
+
+      "posesion"  todos los productos que el cliente tiene. Cualquiera con al menos un
+                  producto recibe vector, asi que la cobertura es practicamente total.
+
+    Por que importa, medido en este proyecto: con "alta" solo 195.548 de los 926.663
+    clientes de validacion tenian vector, un 21%. Pero el ranker se entrena SOLO con
+    filas de clientes que contrataron algo, asi que en entrenamiento la cobertura era
+    casi del 100%. El modelo nunca vio el caso "este cliente no tiene vector" y luego se
+    lo encontro en 4 de cada 5 clientes reales.
+
+    Eso es desajuste entre entrenamiento y servicio, y no da ningun error: el modelo
+    responde igual, solo que peor. Costo 24,6% de MAP. Entrenar sobre posesion iguala la
+    cobertura entre los dos lados y lo elimina.
     """
     indice = {p: i for i, p in enumerate(PRODUCTOS)}
+    columna = "alta_{}" if senal == "alta" else "prev_{}"
+
     tripletas = None
     for p in PRODUCTOS:
         parcial = (
-            entrenamiento.filter(F.col(f"alta_{p}") == 1)
+            entrenamiento.filter(F.col(columna.format(p)) == 1)
             .select("ncodpers", F.lit(indice[p]).alias("item"))
         )
         tripletas = parcial if tripletas is None else tripletas.union(parcial)
@@ -392,6 +414,10 @@ def main() -> None:
     parser.add_argument("--mes-validacion", default=MES_VALIDACION)
     parser.add_argument("--arboles", type=int, default=80)
     parser.add_argument("--profundidad", type=int, default=8)
+    parser.add_argument("--senal-als", default="posesion", choices=["posesion", "alta"],
+                        help="Sobre que entrena el ALS. 'posesion' (por defecto) da "
+                             "vector a todo cliente con algun producto; 'alta' solo a "
+                             "quien contrato algo, y provoca desajuste de cobertura.")
     parser.add_argument("--enfoques", default="todos",
                         help="Lista separada por comas, o 'todos'. Utiles: "
                              "popularidad,als,bosque,xgboost,hibrido")
@@ -447,11 +473,39 @@ def main() -> None:
     # Se entrena si se pide el enfoque ALS o si hace falta para el hibrido.
     if "als" in pedidos or "hibrido" in pedidos:
         with cronometro("als_entrenamiento", metricas):
-            modelo_als = entrenar_als(entrenamiento)
+            modelo_als = entrenar_als(entrenamiento, senal=args.senal_als)
             factores = factores_usuario(modelo_als).cache()
             n_factores = factores.count()
-        metricas["clientes_con_factores_als"] = n_factores
-        print(f"     (ALS entrenado: {n_factores:,} clientes con vector latente)")
+
+        # Cobertura en los DOS lados. Es la comprobacion que detecta el desajuste entre
+        # entrenamiento y servicio, y hay que hacerla siempre que una variable venga de
+        # un modelo previo: si el ranker se entrena con una cobertura y luego predice con
+        # otra muy distinta, esa variable hace mas dano que bien.
+        clientes_train = (
+            _a_formato_largo(entrenamiento).select("ncodpers").distinct()
+        )
+        clientes_val = validacion.select("ncodpers").distinct()
+        cob_train = clientes_train.join(factores, "ncodpers").count() / max(
+            clientes_train.count(), 1
+        )
+        cob_val = clientes_val.join(factores, "ncodpers").count() / max(
+            clientes_val.count(), 1
+        )
+        metricas["als_cobertura"] = {
+            "senal": args.senal_als,
+            "clientes_con_vector": n_factores,
+            "cobertura_entrenamiento": round(100 * cob_train, 1),
+            "cobertura_validacion": round(100 * cob_val, 1),
+            "desajuste": round(100 * abs(cob_train - cob_val), 1),
+        }
+        print(f"     ALS ({args.senal_als}): {n_factores:,} clientes con vector latente")
+        print(f"     Cobertura -- entrenamiento {100 * cob_train:.1f}% | "
+              f"validacion {100 * cob_val:.1f}%")
+        if abs(cob_train - cob_val) > 0.15:
+            print(f"     AVISO: desajuste de cobertura de "
+                  f"{100 * abs(cob_train - cob_val):.0f} puntos. El ranker se entrenara "
+                  f"con esta variable casi siempre presente y luego se la encontrara "
+                  f"ausente en produccion.")
 
     if "als" in pedidos:
         with cronometro("als_evaluacion", metricas):

@@ -137,25 +137,54 @@ def main() -> None:
             "CON FUGA (mes actual incluido)", args.arboles
         )
 
-    salto = resultados["auc_con_fuga"] - resultados["auc_limpio"]
+    limpio = resultados["auc_limpio"]
+    con_fuga = resultados["auc_con_fuga"]
+    salto = con_fuga - limpio
+
+    # Cuanto del margen que le quedaba al modelo limpio se come la fuga.
+    #
+    # Por que NO se mide el salto absoluto: el AUC tiene techo en 1, asi que el salto
+    # posible depende de donde estuviera el modelo limpio. Si el limpio ya va por 0,94,
+    # el salto maximo imaginable es 0,06 -- exigir "que suba mas de 0,10" seria pedir un
+    # imposible y daria una alarma falsa. (Este script tuvo justo ese fallo: el modelo
+    # con fuga llego a un AUC de 1,0000 exacto, la prueba mas concluyente que existe, y
+    # el veredicto lo marco como sospechoso porque el salto se quedaba en 0,062.)
+    #
+    # La magnitud correcta es relativa: de todo el error que le quedaba al modelo limpio,
+    # que fraccion elimina la fuga. Cerrar el 100% significa AUC perfecto, y eso solo
+    # pasa cuando la variable contiene literalmente la respuesta.
+    margen_limpio = 1.0 - limpio
+    cierre = (salto / margen_limpio) if margen_limpio > 1e-9 else 0.0
+
     resultados["salto"] = round(salto, 4)
+    resultados["margen_que_cierra_la_fuga"] = round(cierre, 4)
     resultados["producto"] = args.producto
     resultados["tasa_base"] = round(tasa, 5)
 
     print(f"\n  Salto de AUC por la fuga: +{salto:.4f}")
+    print(f"  La fuga cierra el {100 * cierre:.1f}% del error que le quedaba al limpio.")
 
-    if resultados["auc_con_fuga"] > 0.97 and salto > 0.10:
+    if con_fuga > 0.995 or cierre > 0.80:
         veredicto = (
-            "CORRECTO. El modelo con fuga se dispara a un AUC casi perfecto, que es "
-            "justo lo que se esperaba: la columna del mes actual contiene la respuesta. "
-            "Que el modelo limpio se quede muy por debajo confirma que el pipeline real "
-            "no esta usando informacion del futuro."
+            f"CORRECTO. El modelo con fuga alcanza un AUC de {con_fuga:.4f} y elimina el "
+            f"{100 * cierre:.0f}% del error que le quedaba al modelo limpio. Es justo lo "
+            "que se esperaba: la columna del mes actual contiene la respuesta. Que el "
+            "modelo limpio se quede por debajo confirma que el pipeline real no esta "
+            "usando informacion del futuro."
+        )
+    elif cierre > 0.40:
+        veredicto = (
+            f"ATENCION. La fuga ayuda ({100 * cierre:.0f}% del error restante) pero no "
+            "llega a resolver el problema. Puede que la columna tramposa se este "
+            "diluyendo entre las demas variables, o que el objetivo no dependa tanto de "
+            "ella como se creia. Merece una mirada."
         )
     else:
         veredicto = (
-            "REVISAR. El modelo con fuga no se ha disparado como deberia. O la columna "
-            "tramposa no se esta inyectando bien, o la definicion del objetivo no es la "
-            "que se cree. Hay que mirarlo antes de fiarse de las metricas de las Fases 3 y 4."
+            f"REVISAR. El modelo con fuga apenas mejora ({100 * cierre:.0f}% del error "
+            "restante). O la columna tramposa no se esta inyectando bien, o la definicion "
+            "del objetivo no es la que se cree. Hay que mirarlo antes de fiarse de las "
+            "metricas de las Fases 3 y 4."
         )
     print(f"\n  {veredicto}\n")
     resultados["veredicto"] = veredicto
