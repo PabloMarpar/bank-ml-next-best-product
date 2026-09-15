@@ -1,0 +1,18 @@
+services:
+  spark:
+    build: .
+    working_dir: /app
+    volumes:
+      - .:/app
+      # Credenciales de Kaggle en solo lectura; nunca se copian dentro de la imagen.
+      - ${USERPROFILE:-${HOME}}/.kaggle:/root/.kaggle:ro
+    environment:
+      # La maquina de desarrollo tiene 32 GB. Spark corre en local[*] (un solo proceso),
+      # asi que toda la memoria util es la del driver.
+      SPARK_DRIVER_MEMORY: 12g
+      SPARK_LOCAL_DIRS: /app/data/tmp_spark
+    ports:
+      # Spark UI: util para mirar los stages y el shuffle mientras corre un job.
+      - "4040:4040"
+      # Streamlit
+      - "8501:8501"

@@ -1,0 +1,38 @@
+# Datos (se descargan con scripts/download_data.py, nunca se versionan)
+data/
+*.csv
+*.csv.zip
+*.zip
+*.parquet
+
+# Credenciales
+kaggle.json
+.env
+*.pem
+
+# Notas privadas de trabajo
+DIARIO_PROBLEMAS.md
+NOTAS_ENTREVISTA.md
+
+# Spark
+spark-warehouse/
+metastore_db/
+derby.log
+*.crc
+_SUCCESS
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# SO / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Excepcion: el fichero de la demo si se versiona (es pequeno y lo necesita Streamlit Cloud)
+!app/demo_data.parquet
