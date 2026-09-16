@@ -67,6 +67,40 @@ Después de la búsqueda se reentrena la ganadora con **3 semillas**, entrenamie
 y tope de 20 épocas, para separar la mejora real del ruido de inicialización. El modelo que
 se exporta es el de mejor MAP **de parada**, nunca de test.
 
+### ⭐ El veredicto del tuning: la mejora está POR DEBAJO del ruido
+
+Este es el hallazgo más importante de la sesión, y es negativo.
+
+| | MAP@7 en test |
+|---|---|
+| Sin tuning (dim 64, capas 2, largo 12, supervisión solo en la última posición) | 0.90299 |
+| **Con tuning + supervisión por posición** | **0.90315** |
+| Diferencia | **+0.00016 (+0,02%)** |
+
+Y la **desviación entre las 3 semillas fue 0.00092** (parada: 0.88777 / 0.88689 / 0.88912).
+La mejora es **cinco veces menor que el ruido de inicialización**. En la práctica: el modelo
+ya estaba en su techo para esta familia de arquitecturas.
+
+Lo que se probó para llegar a esa conclusión, y no es poco:
+
+- supervisión por posición (12 etiquetas por cliente en vez de 1)
+- weight tying entre el embedding de productos y la cabeza de salida
+- calentamiento de learning rate + coseno por paso
+- 12 configuraciones sobre 9 hiperparámetros
+- 3 semillas para medir el ruido
+
+**Cómo contarlo:** la parte valiosa no es el +0,02%, es haber medido la desviación entre
+semillas. Sin ese número, +0.00016 se reporta como "mejora" y es mentira. Con él, la
+conclusión correcta es "ya no hay nada que rascar aquí, el siguiente euro se gasta mejor
+en otra parte" — que es exactamente la decisión que se toma en un equipo real.
+
+**Nota sobre la configuración elegida:** la búsqueda se quedó con dim=128 y largo=16, que
+entrena unas 4 veces más lento que el dim=64/largo=12 por defecto, para una diferencia que
+está dentro del ruido. En producción la decisión defendible sería quedarse con el barato.
+Aquí se usa el que eligió el procedimiento, porque cambiarlo a posteriori sería elegir a
+ojo lo que se montó para no elegir a ojo.
+
+
 ### Los dos veredictos de la cuarta tanda (ambos negativos, ambos se reportan)
 
 | Pregunta | Respuesta | Cifra |
