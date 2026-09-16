@@ -47,7 +47,7 @@ MSYS_NO_PATHCONV=1 docker compose run --rm -e PYTHONPATH=/app/src spark \
 
 ## Ficheros que NO van a GitHub
 
-`DIARIO_PROBLEMAS.md`, `NOTAS_ENTREVISTA.md`, `data/`, `logs/`, `*.npz`, credenciales de
+`DIARIO_PROBLEMAS.md`, `NOTAS_ENTREVISTA.md` (notas privadas de trabajo), `data/`, `logs/`, `*.npz`, credenciales de
 Kaggle. Repasar `git status` con los ojos antes de cada commit, no confiar solo en
 `.gitignore`.
 
@@ -57,7 +57,7 @@ Kaggle. Repasar `git status` con los ojos antes de cada commit, no confiar solo 
 - `RESUMEN.md` — la version sin jerga
 - `PERFORMANCE.md` — los 7 experimentos de rendimiento de Spark
 - `CONTEXTO.md` — cuaderno de bitacora (estado vivo)
-- `DIARIO_PROBLEMAS.md` — privado, material de preparacion de entrevista
+- `DIARIO_PROBLEMAS.md` — notas privadas de trabajo, no se versiona
 
 ---
 

@@ -32,7 +32,7 @@ El titular de negocio era 16,4% y 3,22x hasta esta sesión. Se multiplicó por d
 por fin el Transformer con la capa de negocio (antes corría sobre XGBoost) y al enmascarar
 los productos ya poseídos al calcular `prob_compra`.
 
-### Los cuatro hallazgos que valen para una entrevista
+### Los cuatro hallazgos que más dicen del proyecto
 
 1. **Dos bugs de early stopping.** Uno era una fuga latente que nunca llegó a ejecutarse
    (detectada antes de contaminar nada). El otro era peor: la métrica de parada devolvía
@@ -45,16 +45,32 @@ los productos ya poseídos al calcular `prob_compra`.
 4. **Cuatro enfoques probados y descartados con datos**: ALS solo, ensemble, learning-to-rank
    y router por segmento. Ninguno se queda, y todos se reportan.
 
-### Lo que falta (decisiones, no código)
+### Lo que falta: dos acciones, y las dos son del usuario
 
-1. **Pasar el repo a público.** Está en `PabloMarpar/bank-ml-next-best-product`, privado. Se
-   acordó pasarlo a público al terminar: `gh repo edit --visibility public --accept-visibility-change-consequences`
-2. **Card en el portfolio.** `pablomarpar.github.io/index.html`, patrón de card en las líneas
-   645-661 (`<article class="card reveal">` con badge, h3, card-desc, chart-wrap con PNG en
-   base64, chip-row y card-footer). La imagen natural es `outputs/curva_captura.png`. **Debe
-   hacerse DESPUÉS de pasar el repo a público**, o el enlace de la card estará roto.
-3. Opcional: desplegar la demo de Streamlit (`app/streamlit_app.py` + `app/demo_data.parquet`,
-   4.000 clientes, 103 KB, ya generado y versionado).
+Ambas son públicas e irreversibles en la práctica, así que se dejaron preparadas y **sin
+ejecutar** para que las lance el usuario tras revisar.
+
+**1. Pasar el repo a público.**
+```bash
+gh repo edit PabloMarpar/bank-ml-next-best-product \
+  --visibility public --accept-visibility-change-consequences
+```
+
+**2. Publicar la card del portfolio.** Ya está escrita e insertada en
+`pablomarpar.github.io/index.html` (commit local `d2f1041`, primera card después de la
+destacada, con la curva de captura real embebida en base64). Falta solo empujarla:
+```bash
+cd ../pablomarpar.github.io && git push origin master
+```
+**En este orden**: la card enlaza al repo, así que si se empuja antes de hacerlo público,
+cualquier visitante se encuentra un 404.
+
+**Opcional:** desplegar la demo de Streamlit (`app/streamlit_app.py` +
+`app/demo_data.parquet`, 4.000 clientes, 103 KB, ya generado y versionado).
+
+**A revisar antes de publicar:** este mismo fichero, `CONTEXTO.md`, es un cuaderno de
+bitácora con el detalle de los bugs y los callejones sin salida. Como documento de
+ingeniería suma, pero es una decisión del usuario si quiere que sea público.
 
 ### Resultado de la búsqueda de hiperparámetros (`tuning.py`)
 
@@ -76,7 +92,7 @@ dim=128  capas=1  cabezas=4  dropout=0.1  lote=256  wd=1e-4
 largo=16  atar_pesos=NO  lambda_aux=1.0  lr=0.00115
 ```
 
-Tres cosas que esa configuración dice, y que son material de entrevista:
+Tres cosas que esa configuración dice, y que merece la pena leer:
 
 1. **`lambda_aux = 1.0`** — el valor más alto del espacio. La pérdida auxiliar (predecir el
    mes siguiente desde cada posición) pesa tanto como la tarea principal. Es la evidencia
@@ -475,9 +491,12 @@ Matriz valor × riesgo, cortada por percentil 0.80 (no por la mediana):
     capa de negocio usa XGBoost (defendible: es el modelo que ya está en el flujo Spark y la
     diferencia de MAP es de ~3%).
 
+Nota: `DIARIO_PROBLEMAS.md` contiene el detalle técnico de doce incidencias más; se mantiene
+fuera del repositorio a propósito.
+
 Hay **12 incidencias más** con detalle técnico y "cómo lo cuento si me preguntan" en
-`DIARIO_PROBLEMAS.md` (no se sube a GitHub — está en `.gitignore`, es material de preparación
-de entrevista, no de portfolio).
+`DIARIO_PROBLEMAS.md` (notas privadas de trabajo, cubiertas por `.gitignore`).
+
 
 ## Próximos pasos inmediatos (en orden)
 
