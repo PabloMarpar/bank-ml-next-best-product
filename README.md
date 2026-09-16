@@ -45,7 +45,18 @@ objetivo   ->  describe el mes t        (lo que pasó después)
 mismo modelo dos veces: una limpia y otra metiendo a propósito la columna del mes actual.
 Si la separación está bien hecha, el modelo tramposo tiene que dispararse:
 
-<!-- NUMEROS_FUGA -->
+| Modelo | AUC |
+|---|---|
+| Limpio (solo mes t-1) | 0.9379 |
+| Con la columna del mes actual metida a propósito | **1.0000** |
+
+El modelo tramposo **cierra el 100% del error que le quedaba al limpio**. Es exactamente lo
+que tenía que pasar: esa columna contiene la respuesta. Y que el limpio se quede por debajo
+confirma que el pipeline real no la está usando.
+
+El veredicto se da en términos relativos, no como diferencia de AUC. Un salto de 0.938 a
+1.000 son "solo" 6 puntos, que suena a poco; dicho como *fracción del error restante que
+elimina la fuga*, es el 100%, que es lo que de verdad significa.
 
 Dos detalles de corrección que no son obvios y que el código sí contempla:
 
@@ -74,15 +85,18 @@ Son dos denominadores distintos y **no son comparables directamente**. La conver
 MAP@7 (escala Kaggle) = MAP@7 (este repo) x 3,01%
 ```
 
-### Recomendación — cinco enfoques comparados
+### Recomendación — ocho enfoques comparados
 
 | Enfoque | MAP@7 | vs popularidad | Escala Kaggle |
 |---|---|---|---|
-| **XGBoost** | **0.861** | **1,34x** | **≈0.026** |
-| Bosque aleatorio | 0.809 | 1,26x | ≈0.024 |
-| XGBoost + ALS (híbrido) | 0.649 | 1,01x | ≈0.020 |
+| **Transformer causal (SASRec)** | **0.903** | **1,40x** | **≈0.027** |
+| GRU (GRU4Rec) | 0.902 | 1,40x | ≈0.027 |
+| XGBoost multiclase | 0.861 | 1,34x | ≈0.026 |
+| XGBoost + ALS (híbrido corregido) | 0.861 | 1,34x | ≈0.026 |
+| XGBoost ranker (`rank:ndcg`) | 0.852 | 1,32x | ≈0.026 |
+| Bosque aleatorio | 0.833 | 1,30x | ≈0.025 |
 | Popularidad (baseline) | 0.643 | — | ≈0.019 |
-| ALS (filtrado colaborativo) | 0.638 | 0,99x | ≈0.019 |
+| ALS (filtrado colaborativo) | 0.528 | 0,82x | ≈0.016 |
 
 Para situarlo: el ganador de la competición sacó **0.031** y la mediana de los ~1.800
 equipos rondó **0.025**.
@@ -90,9 +104,34 @@ equipos rondó **0.025**.
 La progresión está diseñada para aislar una variable cada vez:
 
 - **Popularidad → ALS** mide qué aporta la señal colaborativa sola. Aquí: **nada**. El
-  filtrado colaborativo queda por debajo del baseline.
-- **ALS → Bosque** mide qué aportan las características del cliente. Aquí: mucho, +26%.
-- **Bosque → XGBoost** mide qué aporta cambiar de algoritmo con la misma información. +6%.
+  filtrado colaborativo queda muy por debajo del baseline.
+- **ALS → Bosque** mide qué aportan las características del cliente. Aquí: mucho.
+- **Bosque → XGBoost** mide qué aporta cambiar de algoritmo con la misma información. +3%.
+- **XGBoost → Transformer** mide qué aporta **el orden de la trayectoria**. +4,9%, y es el
+  salto más interesante del proyecto.
+
+### Por qué el orden importa
+
+XGBoost mira la foto: qué productos tiene el cliente ahora y cuántos ha movido hace poco.
+Para él, dos clientes con cuenta, nómina y tarjeta son idénticos. Pero uno pudo llegar así:
+
+```
+cuenta -> nómina -> tarjeta      (domicilia la nómina y luego pide crédito)
+```
+
+y el otro así:
+
+```
+tarjeta -> nómina -> cuenta      (entró por una tarjeta y se fue trayendo lo demás)
+```
+
+Son dos historias comerciales distintas. La trayectoria dice hacia dónde va alguien; la foto
+solo dice dónde está. Los modelos secuenciales leen esa trayectoria mes a mes: el GRU
+arrastrando un estado, el Transformer con atención causal sobre los 16 meses.
+
+Cada mes entra con **tres canales** — qué tenía, qué acababa de contratar y qué acababa de
+cancelar. Con solo el estado, el modelo tendría que deducir los cambios comparando meses
+consecutivos por su cuenta; darle los eventos directamente vale casi dos puntos de MAP.
 
 ### Lo que no funcionó, y por qué (esto es lo interesante)
 
@@ -119,7 +158,64 @@ La corrección: entrenar el ALS sobre los productos que cada cliente **posee**, 
 los que ha contratado nuevos. Así cualquiera con al menos un producto recibe vector y la
 cobertura se iguala. El código ahora mide la cobertura en ambos lados y avisa si divergen.
 
-<!-- RESULTADO_HIBRIDO_CORREGIDO -->
+| Cobertura del vector ALS | Antes | Después |
+|---|---|---|
+| En entrenamiento | ~100% | 99,2% |
+| En validación | **21%** | 76,5% |
+| MAP@7 del híbrido | 0.649 (−24,6%) | **0.8606** |
+
+Corregido, el híbrido **empata** con XGBoost solo (0.8606 vs 0.8609). No lo supera: deja de
+perjudicar. La señal colaborativa, en estos datos, no añade nada que las variables del
+cliente no tuvieran ya — pero ahora se sabe que eso es un hallazgo y no un bug.
+
+El código mide la cobertura en ambos lados y avisa cuando el desajuste pasa de 15 puntos.
+Sigue habiendo 22,7 de desajuste, así que el aviso salta: es información, no un fallo
+tapado.
+
+### Tres cosas más que se probaron y tampoco funcionaron
+
+**Learning to rank.** Optimizar el orden directamente con `rank:ndcg` en vez de clasificar y
+ordenar por probabilidad: **0.852 vs 0.861, un 1,06% peor**. El ranker paga dos peajes: solo
+entrena con grupos que tienen algún positivo, y el muestreo de negativos le quita contexto.
+
+**Mezclar los modelos (ensemble).** Con los pesos elegidos honestamente en el mes anterior
+al de medición: **0.90294 frente a 0.90299 del Transformer solo**. Los pesos salieron 50/50
+entre GRU y Transformer, así que el problema no es la ponderación — es que los dos aciertan
+en los mismos clientes.
+
+**Un modelo distinto por segmento (router).** +0,06% enrutando por tramo de historial, y
++0,017% por número de productos. Además la segunda segmentación es inestable: uno de cada
+cinco segmentos cambia de modelo ganador entre el mes de decisión y el de medición. No
+compensa mantener cuatro modelos en producción para eso.
+
+### Y el límite: exprimir el Transformer tampoco dio nada
+
+Lo último que se intentó fue sacarle más al mejor modelo, y el resultado merece contarse
+porque es el más honesto de todos.
+
+Se implementó **supervisión por posición**: el modelo aplicaba atención causal pero solo
+usaba la última posición de la secuencia, así que de doce meses de trayectoria salía una
+sola etiqueta. La máscara causal permite predecir el mes j+1 desde cada posición j — que es
+de donde SASRec saca su señal — y eso multiplica por doce las etiquetas con el mismo coste
+de cálculo. Se añadieron también weight tying, calentamiento de learning rate, y una
+búsqueda aleatoria de 12 configuraciones sobre 9 hiperparámetros.
+
+| | MAP@7 |
+|---|---|
+| Antes de todo esto | 0.90299 |
+| Después | **0.90315** |
+| Mejora | **+0.00016 (+0,02%)** |
+
+Y entonces la pregunta que decide si eso es una mejora: **¿cuánto se mueve el modelo solo
+por cambiar la semilla aleatoria?** Tres semillas con la configuración ganadora dieron una
+desviación de **0.00092**.
+
+La mejora es **cinco veces menor que el ruido de inicialización**. No es una mejora.
+
+Esto es lo que aporta medir la varianza entre semillas: sin ese número, +0.00016 se publica
+como "la optimización mejoró el modelo" y es falso. Con él, la conclusión es que el modelo
+ya estaba en su techo para esta familia de arquitecturas, y que el siguiente esfuerzo se
+gasta mejor en otro sitio — más datos, otras variables, otro planteamiento.
 
 ### Caída de negocio
 
