@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Sistema de next best product y retencion en banca sobre 13,6 millones de registros reales: a quien llamar, que ofrecerle y a quien retener antes de venderle nada.">
+<meta name="author" content="Pablo Martin Parera">
+<meta property="og:title" content="Next Best Product">
+<meta property="og:description" content="Contactando al 5% de la cartera se alcanza el 38,3% de las contrataciones del mes, 7,6x lo que se conseguiria llamando al azar.">
+<meta property="og:type" content="website">
+<style>
+  :root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Next Best Product</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
+
+<style>
+  :root {
+    --ground: #EDF0F3;
+    --surface: #FFFFFF;
+    --surface-2: #F6F8FA;
+    --ink: #0D1B26;
+    --ink-2: #44586A;
+    --ink-3: #78899A;
+    --rule: #D3DCE3;
+    --rule-soft: #E4EAEF;
+    --accent: #0E6BA8;
+    --accent-soft: rgba(14, 107, 168, 0.12);
+    --brass: #A6761D;
+    --brass-soft: rgba(166, 118, 29, 0.12);
+    --ref: #8C9BA7;
+    --shadow: 0 1px 2px rgba(13, 27, 38, 0.05), 0 8px 24px rgba(13, 27, 38, 0.06);
+
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+    --wrap: 1080px;
+  }
+
+  :root:not([data-theme="light"]) {
+    color-scheme: light dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0A0F14;
+      --surface: #121A21;
+      --surface-2: #17212A;
+      --ink: #E6EDF3;
+      --ink-2: #9FB0BD;
+      --ink-3: #6B7C8A;
+      --rule: #23313C;
+      --rule-soft: #1B2830;
+      --accent: #3E88C0;
+      --accent-soft: rgba(62, 136, 192, 0.16);
+      --brass: #B08A38;
+      --brass-soft: rgba(176, 138, 56, 0.16);
+      --ref: #5E7080;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0A0F14;
+    --surface: #121A21;
+    --surface-2: #17212A;
+    --ink: #E6EDF3;
+    --ink-2: #9FB0BD;
+    --ink-3: #6B7C8A;
+    --rule: #23313C;
+    --rule-soft: #1B2830;
+    --accent: #3E88C0;
+    --accent-soft: rgba(62, 136, 192, 0.16);
+    --brass: #B08A38;
+    --brass-soft: rgba(176, 138, 56, 0.16);
+    --ref: #5E7080;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  /* ---------- Barra superior ---------- */
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 40;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 56px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .brand {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .brand span { color: var(--ink-3); }
+  .topnav { display: flex; gap: 22px; flex-wrap: wrap; }
+  .topnav a {
+    font-size: 0.83rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    padding: 2px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .topnav a:hover, .topnav a:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
+  @media (max-width: 720px) { .topnav { display: none; } }
+
+  /* ---------- Secciones ---------- */
+  section { padding-block: 64px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: 0; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(2.3rem, 6vw, 3.7rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0 0 20px;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.6vw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 16px;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.16rem;
+    line-height: 1.3;
+    margin: 0 0 8px;
+  }
+  p { margin: 0 0 16px; max-width: 68ch; color: var(--ink-2); }
+  p.lede {
+    font-size: 1.14rem;
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  strong { color: var(--ink); font-weight: 600; }
+  a { color: var(--accent); }
+
+  /* ---------- Portada ---------- */
+  .hero { padding-top: 72px; }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 40px;
+  }
+  .fact { background: var(--ground); padding: 18px 20px; }
+  .fact-num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.32rem;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .fact-label {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  @media (max-width: 760px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* ---------- Figuras ---------- */
+  figure {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+  .fig-head { margin-bottom: 18px; }
+  .fig-title {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.97rem;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .fig-sub { font-size: 0.83rem; color: var(--ink-3); margin: 0; max-width: 60ch; }
+  figcaption {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule-soft);
+    max-width: 66ch;
+  }
+  .chart { width: 100%; display: block; overflow: visible; }
+  .chart text { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 14px; }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--ink-2);
+  }
+  .swatch { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+  .swatch.dashed {
+    height: 0;
+    border-top: 2px dashed var(--ref);
+    border-radius: 0;
+  }
+
+  /* ---------- Resultado ---------- */
+  .result-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .result-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+
+  .headline-num {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(3.4rem, 9vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .headline-sub {
+    font-size: 1.02rem;
+    color: var(--ink-2);
+    margin-top: 12px;
+    max-width: 34ch;
+  }
+  .ratio-strip {
+    display: flex;
+    gap: 0;
+    margin-top: 28px;
+    border-top: 1px solid var(--rule);
+  }
+  .ratio-cell {
+    flex: 1;
+    padding: 14px 16px 0 0;
+  }
+  .ratio-cell + .ratio-cell { padding-left: 16px; border-left: 1px solid var(--rule); }
+  .ratio-num {
+    font-family: var(--mono);
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .ratio-label { font-size: 0.76rem; color: var(--ink-3); line-height: 1.4; }
+
+  /* ---------- Dinero ---------- */
+  .money-panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--brass);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-top: 32px;
+  }
+  .money-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+  @media (max-width: 800px) { .money-row { grid-template-columns: minmax(0, 1fr); gap: 20px; } }
+  .money-item + .money-item { border-left: 1px solid var(--rule); padding-left: 28px; }
+  @media (max-width: 800px) {
+    .money-item + .money-item { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 20px; }
+  }
+  .money-num {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .money-num.is-key { color: var(--brass); }
+  .money-tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .money-note { font-size: 0.85rem; color: var(--ink-3); margin-top: 6px; max-width: 34ch; }
+  .assumptions {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule-soft);
+    font-size: 0.84rem;
+    color: var(--ink-3);
+    max-width: 72ch;
+  }
+  .assumptions code {
+    font-family: var(--mono);
+    color: var(--ink-2);
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border: 1px solid var(--rule-soft);
+  }
+
+  /* ---------- Tablas ---------- */
+  .table-wrap { overflow-x: auto; margin-top: 24px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    min-width: 520px;
+  }
+  caption {
+    text-align: left;
+    font-size: 0.83rem;
+    color: var(--ink-3);
+    padding-bottom: 10px;
+  }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 14px 8px 0;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    color: var(--ink-2);
+    vertical-align: top;
+  }
+  td.num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  td.verdict { color: var(--ink-3); }
+  tr.is-winner td { color: var(--ink); }
+  tr.is-winner td:first-child { font-weight: 600; }
+
+  .delta-neg { color: var(--ink-3); }
+
+  /* ---------- Toggle de datos ---------- */
+  details { margin-top: 14px; }
+  details > summary {
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before {
+    content: "+";
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    color: var(--accent);
+  }
+  details[open] > summary::before { content: "–"; }
+  details > summary:hover { color: var(--accent); }
+  details[open] table { min-width: 0; }
+
+  /* ---------- Ruido ---------- */
+  .noise-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+  @media (max-width: 860px) { .noise-grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .verdict-box {
+    margin-top: 32px;
+    padding: 24px 28px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+  }
+  .verdict-box p { margin: 0; color: var(--ink); font-size: 1.04rem; max-width: 64ch; }
+
+  /* ---------- Pipeline ---------- */
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 28px;
+  }
+  @media (max-width: 800px) { .pipeline { grid-template-columns: minmax(0, 1fr); } }
+  .stage { background: var(--surface); padding: 22px 20px; }
+  .stage-n {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .stage h3 { font-size: 1rem; margin-bottom: 6px; }
+  .stage p { font-size: 0.86rem; margin: 0; color: var(--ink-3); }
+  .stage code {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--ink-2);
+  }
+
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .tech {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+    padding: 4px 11px;
+    background: var(--surface);
+  }
+
+  /* ---------- Pie ---------- */
+  footer {
+    padding-block: 44px 56px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+  footer p { color: var(--ink-3); font-size: 0.85rem; }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+
+  /* ---------- Tooltip ---------- */
+  .tip {
+    position: fixed;
+    z-index: 60;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--ground);
+    border-radius: 3px;
+    padding: 7px 10px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.12s;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  }
+  .tip.on { opacity: 1; }
+  .tip b { font-weight: 500; color: #fff; }
+  :root[data-theme="dark"] .tip, :root:not([data-theme="light"]) .tip { color: var(--ground); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">Next Best Product <span>/ banca minorista</span></div>
+    <nav class="topnav">
+      <a href="#resultado">Resultado</a>
+      <a href="#dinero">Retención</a>
+      <a href="#modelos">Modelos</a>
+      <a href="#ruido">Señal y ruido</a>
+      <a href="#construccion">Construcción</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ PORTADA ============ -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Recomendación y retención sobre 13,6 millones de registros</p>
+      <h1>A quién llama el banco el mes que viene</h1>
+      <p class="lede">
+        Un equipo comercial puede contactar a unos miles de clientes al mes, sobre una cartera
+        de casi un millón. Este sistema decide a quién llamar, qué producto ofrecerle y a quién
+        hay que retener antes de intentar venderle nada.
+      </p>
+
+      <div class="facts">
+        <div class="fact">
+          <div class="fact-num">13.647.309</div>
+          <div class="fact-label">registros mensuales reales</div>
+        </div>
+        <div class="fact">
+          <div class="fact-num">946.089</div>
+          <div class="fact-label">clientes</div>
+        </div>
+        <div class="fact">
+          <div class="fact-num">24</div>
+          <div class="fact-label">productos financieros</div>
+        </div>
+        <div class="fact">
+          <div class="fact-num">17</div>
+          <div class="fact-label">meses de histórico</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTADO ============ -->
+  <section id="resultado">
+    <div class="wrap">
+      <p class="eyebrow">El resultado</p>
+      <div class="result-grid">
+        <div>
+          <div class="headline-num">38,3<span style="font-size:0.5em">%</span></div>
+          <p class="headline-sub">
+            de las contrataciones del mes se alcanzan contactando solo al <strong>5% de la
+            cartera</strong>. Llamando al azar a esas mismas personas se llegaría al 5%.
+          </p>
+
+          <div class="ratio-strip">
+            <div class="ratio-cell">
+              <div class="ratio-num">7,56&times;</div>
+              <div class="ratio-label">frente a llamar al azar</div>
+            </div>
+            <div class="ratio-cell">
+              <div class="ratio-num">46.993</div>
+              <div class="ratio-label">llamadas</div>
+            </div>
+            <div class="ratio-cell">
+              <div class="ratio-num">10.680</div>
+              <div class="ratio-label">contrataciones alcanzadas</div>
+            </div>
+          </div>
+        </div>
+
+        <figure>
+          <div class="fig-head">
+            <p class="fig-title">Curva de captura</p>
+            <p class="fig-sub">Qué porcentaje de las contrataciones del mes se alcanza según
+              cuánta cartera se contacte, ordenada por propensión.</p>
+          </div>
+          <svg class="chart" id="chart-captura" viewBox="0 0 560 330" role="img"
+               aria-label="Curva de captura: contactando al 5% de la cartera se alcanza el 38,3% de las contrataciones, frente al 5% que se alcanzaría al azar."></svg>
+          <div class="legend">
+            <span class="legend-item"><span class="swatch" style="background:var(--accent)"></span>Cartera ordenada por el modelo</span>
+            <span class="legend-item"><span class="swatch dashed"></span>Llamadas al azar</span>
+          </div>
+          <figcaption>
+            Medida sobre los 926.663 clientes de la cartera del mes, no solo sobre los 27.875
+            que contrataron algo. Esa distinción es la que hace que la cifra signifique algo.
+          </figcaption>
+          <details>
+            <summary>Ver datos</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Cartera contactada</th><th>Clientes</th><th>Contrataciones alcanzadas</th><th>% capturado</th><th>Multiplicador</th></tr>
+                </thead>
+                <tbody id="tbody-captura"></tbody>
+              </table>
+            </div>
+          </details>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DINERO ============ -->
+  <section id="dinero">
+    <div class="wrap">
+      <p class="eyebrow">La campaña de retención</p>
+      <h2>El umbral no es 0,5</h2>
+      <p>
+        El segundo modelo predice quién va a cancelar un producto. Pero la decisión de a quién
+        llamar no sale de la probabilidad, sale del dinero: cada contacto cuesta, cada baja
+        evitada vale, y el punto óptimo casi nunca cae donde lo deja la librería por defecto.
+      </p>
+
+      <div class="money-panel">
+        <div class="money-row">
+          <div class="money-item">
+            <div class="money-tag">Umbral óptimo &mdash; 0,16</div>
+            <div class="money-num is-key">292.033 &euro;</div>
+            <p class="money-note">45.727 contactos que capturan 14.463 bajas reales, el 46,4% de
+              todas las del mes.</p>
+          </div>
+          <div class="money-item">
+            <div class="money-tag">Umbral por inercia &mdash; 0,50</div>
+            <div class="money-num">104.156 &euro;</div>
+            <p class="money-note">Solo 4.916 contactos. El modelo es el mismo; lo que cambia es
+              dónde se corta.</p>
+          </div>
+          <div class="money-item">
+            <div class="money-tag">Diferencia</div>
+            <div class="money-num is-key">+187.877 &euro;</div>
+            <p class="money-note">Lo que cuesta no elegir el umbral, en un solo mes y sin tocar
+              el modelo.</p>
+          </div>
+        </div>
+        <p class="assumptions">
+          Supuestos explícitos, escritos en el código y no escondidos:
+          <code>coste por contacto = 5 &euro;</code>,
+          <code>margen anual salvado por retención = 120 &euro;</code>,
+          tasa de éxito de la llamada aplicada sobre las bajas capturadas. Cambiar estos números
+          cambia el óptimo, y por eso están a la vista para poder discutirlos.
+        </p>
+      </div>
+
+      <figure style="margin-top:24px">
+        <div class="fig-head">
+          <p class="fig-title">Valor esperado de la campaña según dónde se corte</p>
+          <p class="fig-sub">Contactar a todo el mundo pierde dinero; contactar a casi nadie lo
+            deja sobre la mesa. El óptimo es un punto, y hay que buscarlo.</p>
+        </div>
+        <svg class="chart" id="chart-umbral" viewBox="0 0 900 340" role="img"
+             aria-label="Valor esperado de la campaña de retención según el umbral de probabilidad. El máximo está en 0,16 con 292.033 euros; el umbral 0,50 por defecto rinde 104.156 euros."></svg>
+        <div class="legend">
+          <span class="legend-item"><span class="swatch" style="background:var(--brass)"></span>Valor esperado de la campaña</span>
+          <span class="legend-item"><span class="swatch" style="background:var(--ref)"></span>Umbral 0,50 por defecto</span>
+        </div>
+        <figcaption>
+          Con el umbral en 0,01 se contactaría a 799.225 clientes y la campaña perdería
+          2.905.145 &euro;: el coste de las llamadas se come el valor de las retenciones. Ese
+          punto queda fuera de la escala del gráfico para no aplastar el resto.
+        </figcaption>
+        <details>
+          <summary>Ver datos</summary>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Umbral</th><th>Contactados</th><th>Bajas capturadas</th><th>Valor esperado</th></tr></thead>
+              <tbody id="tbody-umbral"></tbody>
+            </table>
+          </div>
+        </details>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ MODELOS ============ -->
+  <section id="modelos">
+    <div class="wrap">
+      <p class="eyebrow">Los modelos</p>
+      <h2>Ocho enfoques, medidos en el mismo mes</h2>
+      <p>
+        La métrica es MAP@7, la de la competición original. El salto que importa no es entre
+        algoritmos parecidos, sino entre mirar <strong>la foto</strong> del cliente y mirar
+        <strong>su trayectoria</strong>: dos clientes con cuenta, nómina y tarjeta son idénticos
+        para un clasificador, pero uno llegó domiciliando la nómina y el otro entró por una
+        tarjeta. Son dos historias comerciales distintas.
+      </p>
+
+      <figure style="margin-top:28px">
+        <div class="fig-head">
+          <p class="fig-title">MAP@7 por enfoque</p>
+          <p class="fig-sub">Medido sobre los 27.875 clientes que contrataron algo en
+            2016-05-28. El entrenamiento se corta dos meses antes del de medición.</p>
+        </div>
+        <svg class="chart" id="chart-modelos" viewBox="0 0 900 400" role="img"
+             aria-label="Comparación de MAP@7 por enfoque. El Transformer causal alcanza 0,903, el GRU 0,902, XGBoost 0,861 y la popularidad 0,643."></svg>
+        <figcaption>
+          Los modelos secuenciales leen la trayectoria mes a mes. Cada mes entra con tres
+          canales &mdash; qué tenía el cliente, qué acababa de contratar y qué acababa de
+          cancelar &mdash; en vez de solo el estado.
+        </figcaption>
+      </figure>
+
+      <div class="table-wrap" style="margin-top:36px">
+        <table>
+          <caption>Cuatro enfoques que se probaron y no se quedaron. Todos se reportan.</caption>
+          <thead>
+            <tr><th>Enfoque</th><th>Resultado</th><th>Por qué no se queda</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ALS (filtrado colaborativo)</td>
+              <td class="num delta-neg">0,528</td>
+              <td class="verdict">Queda por debajo del baseline de popularidad. La señal
+                colaborativa sola no aporta en estos datos.</td>
+            </tr>
+            <tr>
+              <td>Learning to rank (<code>rank:ndcg</code>)</td>
+              <td class="num delta-neg">&minus;1,06%</td>
+              <td class="verdict">Solo entrena con grupos que tienen algún positivo, y el
+                muestreo de negativos le quita contexto.</td>
+            </tr>
+            <tr>
+              <td>Ensemble de los cinco modelos</td>
+              <td class="num delta-neg">&minus;0,00006</td>
+              <td class="verdict">Los pesos, elegidos en el mes anterior, salieron 50/50 entre
+                GRU y Transformer: aciertan en los mismos clientes.</td>
+            </tr>
+            <tr>
+              <td>Un modelo distinto por segmento</td>
+              <td class="num">+0,06%</td>
+              <td class="verdict">Demasiado poco para mantener cuatro modelos. Y la segmentación
+                por número de productos es inestable entre meses.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RUIDO ============ -->
+  <section id="ruido">
+    <div class="wrap">
+      <p class="eyebrow">Señal y ruido</p>
+      <h2>La optimización que no existió</h2>
+      <p>
+        Al final del proyecto se intentó exprimir el mejor modelo: supervisar todas las
+        posiciones de la secuencia en vez de solo la última, atar los pesos del embedding a la
+        capa de salida, calentar el learning rate, y una búsqueda aleatoria de doce
+        configuraciones sobre nueve hiperparámetros. La mejora fue de <strong>+0,00016</strong>
+        de MAP.
+      </p>
+      <p>
+        Antes de llamar a eso una mejora hay que hacer una comprobación que se salta mucha
+        gente: entrenar el <strong>mismo</strong> modelo tres veces cambiando solo la semilla
+        aleatoria.
+      </p>
+
+      <div class="noise-grid">
+        <figure>
+          <div class="fig-head">
+            <p class="fig-title">Mejora contra ruido</p>
+            <p class="fig-sub">A la misma escala de MAP@7.</p>
+          </div>
+          <svg class="chart" id="chart-ruido" viewBox="0 0 440 200" role="img"
+               aria-label="La mejora del ajuste de hiperparámetros es 0,00016 de MAP; la desviación entre tres semillas del mismo modelo es 0,00092, casi seis veces mayor."></svg>
+          <figcaption>
+            La desviación entre semillas es <strong>5,8 veces mayor</strong> que todo lo que
+            ganó la optimización.
+          </figcaption>
+        </figure>
+
+        <figure>
+          <div class="fig-head">
+            <p class="fig-title">Las doce configuraciones</p>
+            <p class="fig-sub">MAP@7 en el mes de parada, que es donde se eligen. El mes de test
+              no se toca hasta el final.</p>
+          </div>
+          <svg class="chart" id="chart-busqueda" viewBox="0 0 440 200" role="img"
+               aria-label="Las doce configuraciones probadas se reparten entre 0,872 y 0,886 de MAP en el mes de parada."></svg>
+          <figcaption>
+            La búsqueda sí separó configuraciones &mdash; un rango de 0,014. Lo que no hizo fue
+            trasladarse al mes de test.
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="verdict-box">
+        <p>
+          Lo que sí funcionó fue mucho más simple: añadir una variable en la que nadie había
+          pensado &mdash; cuántos meses lleva el cliente con <em>ese</em> producto concreto.
+          Subió el AUC de bajas de 0,8659 a 0,8835. <strong>Noventa veces más que toda la
+          optimización de hiperparámetros.</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONSTRUCCIÓN ============ -->
+  <section id="construccion">
+    <div class="wrap">
+      <p class="eyebrow">Cómo está construido</p>
+      <h2>La trampa del dataset, y cómo se evita</h2>
+      <p>
+        Cada fila trae, para un cliente y un mes, los 24 productos que tiene <em>ese</em> mes.
+        Usar esas columnas para predecir qué contrata ese mismo mes da un modelo casi perfecto
+        que no vale para nada: cuando hay que decidir a quién llamar, todavía no se sabe qué va
+        a pasar. Todo el pipeline separa las variables (mes t&minus;1) de la respuesta (mes t).
+      </p>
+      <p>
+        Y se comprueba en vez de afirmarse: hay un experimento que mete la columna del mes
+        actual a propósito. El modelo tramposo llega a un AUC de <strong>1,0000</strong> y cierra
+        el 100% del error que le quedaba al limpio (0,9379). Que el limpio se quede por debajo
+        confirma que el pipeline real no está usando información del futuro.
+      </p>
+
+      <div class="pipeline">
+        <div class="stage">
+          <div class="stage-n">FASE 1&ndash;2</div>
+          <h3>Ingesta y variables</h3>
+          <p>CSV a Parquet, 13,6M filas. Las columnas se leen como texto y se castean a mano:
+            el fichero trae <code>NA</code> textual, espacios de relleno y el centinela
+            <code>-999999</code>.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-n">FASE 3</div>
+          <h3>Recomendación</h3>
+          <p>Ocho enfoques comparados, del baseline de popularidad al Transformer causal sobre
+            la trayectoria del cliente.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-n">FASE 4&ndash;5</div>
+          <h3>Bajas y plan comercial</h3>
+          <p>Modelo de cancelación calibrado, umbral por valor de negocio y matriz de
+            valor&nbsp;&times;&nbsp;riesgo que parte la cartera en cuatro acciones.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:36px">
+        <table>
+          <caption>La cartera, partida por lo que hay que hacer con cada cliente.</caption>
+          <thead>
+            <tr><th>Cuadrante</th><th>Clientes</th><th>Cartera</th><th>Acción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>No tocar</td><td class="num">584.286</td><td class="num">63,1%</td><td class="verdict">No gastar contacto este mes</td></tr>
+            <tr><td>Retener</td><td class="num">152.647</td><td class="num">16,5%</td><td class="verdict">Campaña de retención</td></tr>
+            <tr><td>Vender</td><td class="num">146.487</td><td class="num">15,8%</td><td class="verdict">Ofrecerle el siguiente producto</td></tr>
+            <tr class="is-winner"><td>Retener primero</td><td class="num">43.243</td><td class="num">4,7%</td><td class="verdict">Retener antes de intentar venderle nada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="stack">
+        <span class="tech">PySpark</span>
+        <span class="tech">PyTorch</span>
+        <span class="tech">Transformer causal</span>
+        <span class="tech">GRU</span>
+        <span class="tech">XGBoost</span>
+        <span class="tech">ALS</span>
+        <span class="tech">Docker</span>
+        <span class="tech">Streamlit</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p style="margin:0">
+      Datos: <em>Santander Product Recommendation</em>, competición pública de Kaggle.
+      Proyecto personal, sin relación con la entidad.
+    </p>
+    <p style="margin:0">Pablo Martín Parera</p>
+  </div>
+</footer>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var css = getComputedStyle(document.documentElement);
+  function token(name) { return css.getPropertyValue(name).trim(); }
+
+  var COL = {
+    accent: token("--accent"),
+    brass: token("--brass"),
+    ref: token("--ref"),
+    ink: token("--ink"),
+    ink2: token("--ink-2"),
+    ink3: token("--ink-3"),
+    rule: token("--rule"),
+    ruleSoft: token("--rule-soft"),
+    surface: token("--surface")
+  };
+
+  var NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) { if (attrs[k] !== undefined && attrs[k] !== null) n.setAttribute(k, attrs[k]); }
+    return n;
+  }
+  function fmt(n, d) {
+    return n.toLocaleString("es-ES", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+  }
+
+  /* ---------- Tooltip compartido ---------- */
+  var tip = document.getElementById("tip");
+  function showTip(evt, html) {
+    tip.innerHTML = html;
+    tip.classList.add("on");
+    var r = tip.getBoundingClientRect();
+    var x = evt.clientX + 14;
+    var y = evt.clientY - r.height - 10;
+    if (x + r.width > window.innerWidth - 8) x = evt.clientX - r.width - 14;
+    if (y < 8) y = evt.clientY + 18;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+  function hideTip() { tip.classList.remove("on"); }
+
+  function hoverable(node, html) {
+    node.addEventListener("mouseenter", function (e) { showTip(e, html); });
+    node.addEventListener("mousemove", function (e) { showTip(e, html); });
+    node.addEventListener("mouseleave", hideTip);
+    node.style.cursor = "default";
+  }
+
+  /* =========================================================
+     1. CURVA DE CAPTURA
+     ========================================================= */
+  var CAPTURA = [
+    { pct: 1.1, clientes: 9949, aciertos: 4726, cap: 17.0, mult: 15.79 },
+    { pct: 2.1, clientes: 19079, aciertos: 7115, cap: 25.5, mult: 12.40 },
+    { pct: 5.1, clientes: 46993, aciertos: 10680, cap: 38.3, mult: 7.56 },
+    { pct: 10.1, clientes: 93163, aciertos: 13644, cap: 48.9, mult: 4.87 },
+    { pct: 20.1, clientes: 185826, aciertos: 16096, cap: 57.7, mult: 2.88 },
+    { pct: 50.0, clientes: 463715, aciertos: 22799, cap: 81.8, mult: 1.63 }
+  ];
+
+  (function drawCaptura() {
+    var svg = document.getElementById("chart-captura");
+    var W = 560, H = 330;
+    /* b = 52 y no 40: con 40, la fila de marcas del eje y su rotulo se solapaban. */
+    var m = { t: 14, r: 18, b: 52, l: 44 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var xMax = 50, yMax = 100;
+    function X(v) { return m.l + (v / xMax) * iw; }
+    function Y(v) { return m.t + ih - (v / yMax) * ih; }
+
+    [0, 25, 50, 75, 100].forEach(function (v) {
+      svg.appendChild(el("line", {
+        x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v),
+        stroke: COL.ruleSoft, "stroke-width": 1
+      }));
+      var t = el("text", { x: m.l - 9, y: Y(v) + 4, "text-anchor": "end",
+        "font-size": 10, fill: COL.ink3 });
+      t.textContent = v + "%";
+      svg.appendChild(t);
+    });
+
+    [0, 10, 20, 30, 40, 50].forEach(function (v) {
+      var t = el("text", { x: X(v), y: m.t + ih + 22, "text-anchor": "middle",
+        "font-size": 10, fill: COL.ink3 });
+      t.textContent = v + "%";
+      svg.appendChild(t);
+    });
+
+    var axLabel = el("text", { x: m.l + iw / 2, y: H - 8, "text-anchor": "middle",
+      "font-size": 10, fill: COL.ink3 });
+    axLabel.textContent = "cartera contactada";
+    svg.appendChild(axLabel);
+
+    /* referencia: llamar al azar (y = x) */
+    svg.appendChild(el("line", {
+      x1: X(0), y1: Y(0), x2: X(50), y2: Y(50),
+      stroke: COL.ref, "stroke-width": 2, "stroke-dasharray": "5 4"
+    }));
+
+    /* área y línea del modelo */
+    var pts = [{ pct: 0, cap: 0 }].concat(CAPTURA);
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + X(p.pct) + " " + Y(p.cap); }).join(" ");
+    svg.appendChild(el("path", {
+      d: d + " L" + X(50) + " " + Y(0) + " L" + X(0) + " " + Y(0) + " Z",
+      fill: COL.accent, opacity: 0.10, stroke: "none"
+    }));
+    svg.appendChild(el("path", { d: d, fill: "none", stroke: COL.accent, "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round" }));
+
+    /* marcas */
+    CAPTURA.forEach(function (p) {
+      var key = p.cap === 38.3;
+      svg.appendChild(el("circle", {
+        cx: X(p.pct), cy: Y(p.cap), r: key ? 6 : 4,
+        fill: key ? COL.accent : COL.surface,
+        stroke: COL.accent, "stroke-width": 2
+      }));
+      var hit = el("circle", { cx: X(p.pct), cy: Y(p.cap), r: 16, fill: "transparent" });
+      hoverable(hit,
+        "<b>" + fmt(p.cap, 1) + "% capturado</b><br>contactando al " + fmt(p.pct, 1) + "%<br>" +
+        fmt(p.clientes) + " clientes &middot; " + fmt(p.mult, 2) + "&times; el azar");
+      svg.appendChild(hit);
+    });
+
+    /* anotación del punto clave */
+    var ann = el("text", { x: X(5.1) + 12, y: Y(38.3) - 12, "font-size": 11,
+      fill: COL.accent, "font-weight": 500 });
+    ann.textContent = "5% → 38,3%";
+    svg.appendChild(ann);
+
+    var annRef = el("text", { x: X(38), y: Y(38) + 18, "font-size": 10, fill: COL.ref });
+    annRef.textContent = "azar";
+    svg.appendChild(annRef);
+
+    var tb = document.getElementById("tbody-captura");
+    CAPTURA.forEach(function (p) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td class='num'>" + fmt(p.pct, 1) + "%</td>" +
+        "<td class='num'>" + fmt(p.clientes) + "</td>" +
+        "<td class='num'>" + fmt(p.aciertos) + "</td>" +
+        "<td class='num'>" + fmt(p.cap, 1) + "%</td>" +
+        "<td class='num'>" + fmt(p.mult, 2) + "&times;</td>";
+      tb.appendChild(tr);
+    });
+  })();
+
+  /* =========================================================
+     2. VALOR ESPERADO SEGÚN UMBRAL
+     ========================================================= */
+  var UMBRAL = [
+    { u: 0.06, c: 116681, b: 20194, v: 143579 },
+    { u: 0.11, c: 77528, b: 17817, v: 253772 },
+    { u: 0.16, c: 45727, b: 14463, v: 292033 },
+    { u: 0.21, c: 37185, b: 13108, v: 285963 },
+    { u: 0.26, c: 23752, b: 10652, v: 264712 },
+    { u: 0.31, c: 16705, b: 8596, v: 225931 },
+    { u: 0.36, c: 16088, b: 8373, v: 220988 }
+  ];
+  var INERCIA = { u: 0.50, c: 4916, v: 104156 };
+
+  (function drawUmbral() {
+    var svg = document.getElementById("chart-umbral");
+    var W = 900, H = 340;
+    var m = { t: 18, r: 28, b: 44, l: 78 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var xMin = 0.03, xMax = 0.54, yMax = 320000;
+    function X(v) { return m.l + ((v - xMin) / (xMax - xMin)) * iw; }
+    function Y(v) { return m.t + ih - (v / yMax) * ih; }
+
+    [0, 100000, 200000, 300000].forEach(function (v) {
+      svg.appendChild(el("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v),
+        stroke: COL.ruleSoft, "stroke-width": 1 }));
+      var t = el("text", { x: m.l - 10, y: Y(v) + 4, "text-anchor": "end",
+        "font-size": 10, fill: COL.ink3 });
+      t.textContent = v === 0 ? "0 €" : fmt(v / 1000) + "k €";
+      svg.appendChild(t);
+    });
+
+    [0.05, 0.15, 0.25, 0.35, 0.45, 0.50].forEach(function (v) {
+      var t = el("text", { x: X(v), y: m.t + ih + 22, "text-anchor": "middle",
+        "font-size": 10, fill: COL.ink3 });
+      t.textContent = v.toFixed(2).replace(".", ",");
+      svg.appendChild(t);
+    });
+    var axl = el("text", { x: m.l + iw / 2, y: H - 6, "text-anchor": "middle",
+      "font-size": 10, fill: COL.ink3 });
+    axl.textContent = "umbral de probabilidad de baja";
+    svg.appendChild(axl);
+
+    var d = UMBRAL.map(function (p, i) { return (i ? "L" : "M") + X(p.u) + " " + Y(p.v); }).join(" ");
+    svg.appendChild(el("path", {
+      d: d + " L" + X(0.36) + " " + Y(0) + " L" + X(0.06) + " " + Y(0) + " Z",
+      fill: COL.brass, opacity: 0.10, stroke: "none"
+    }));
+    svg.appendChild(el("path", { d: d, fill: "none", stroke: COL.brass, "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round" }));
+
+    UMBRAL.forEach(function (p) {
+      var best = p.u === 0.16;
+      svg.appendChild(el("circle", {
+        cx: X(p.u), cy: Y(p.v), r: best ? 6 : 4,
+        fill: best ? COL.brass : COL.surface, stroke: COL.brass, "stroke-width": 2
+      }));
+      var hit = el("circle", { cx: X(p.u), cy: Y(p.v), r: 18, fill: "transparent" });
+      hoverable(hit, "<b>" + fmt(p.v) + " €</b><br>umbral " + p.u.toFixed(2).replace(".", ",") +
+        "<br>" + fmt(p.c) + " contactos &middot; " + fmt(p.b) + " bajas");
+      svg.appendChild(hit);
+    });
+
+    /* línea vertical al óptimo */
+    svg.appendChild(el("line", { x1: X(0.16), x2: X(0.16), y1: Y(292033), y2: Y(0),
+      stroke: COL.brass, "stroke-width": 1, "stroke-dasharray": "3 3", opacity: 0.5 }));
+    var lbl = el("text", { x: X(0.16), y: Y(292033) - 14, "text-anchor": "middle",
+      "font-size": 11, fill: COL.brass, "font-weight": 500 });
+    lbl.textContent = "292.033 €";
+    svg.appendChild(lbl);
+
+    /* el umbral por inercia, aislado */
+    svg.appendChild(el("circle", { cx: X(INERCIA.u), cy: Y(INERCIA.v), r: 5,
+      fill: COL.ref, stroke: COL.surface, "stroke-width": 2 }));
+    var hit2 = el("circle", { cx: X(INERCIA.u), cy: Y(INERCIA.v), r: 18, fill: "transparent" });
+    hoverable(hit2, "<b>" + fmt(INERCIA.v) + " €</b><br>umbral 0,50 por defecto<br>" +
+      fmt(INERCIA.c) + " contactos");
+    svg.appendChild(hit2);
+    var lbl2 = el("text", { x: X(INERCIA.u), y: Y(INERCIA.v) - 14, "text-anchor": "end",
+      "font-size": 10, fill: COL.ink3 });
+    lbl2.textContent = "0,50 → 104.156 €";
+    svg.appendChild(lbl2);
+
+    var tb = document.getElementById("tbody-umbral");
+    UMBRAL.concat([INERCIA]).forEach(function (p) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td class='num'>" + p.u.toFixed(2).replace(".", ",") + "</td>" +
+        "<td class='num'>" + fmt(p.c) + "</td>" +
+        "<td class='num'>" + (p.b ? fmt(p.b) : "&mdash;") + "</td>" +
+        "<td class='num'>" + fmt(p.v) + " €</td>";
+      tb.appendChild(tr);
+    });
+  })();
+
+  /* =========================================================
+     3. MAP@7 POR ENFOQUE
+     ========================================================= */
+  var MODELOS = [
+    { n: "Transformer causal", v: 0.903, win: true },
+    { n: "GRU", v: 0.902 },
+    { n: "XGBoost multiclase", v: 0.861 },
+    { n: "XGBoost + ALS", v: 0.861 },
+    { n: "Ranker rank:ndcg", v: 0.852 },
+    { n: "Bosque aleatorio", v: 0.833 },
+    { n: "Popularidad", v: 0.643, base: true },
+    { n: "ALS", v: 0.528 }
+  ];
+
+  (function drawModelos() {
+    var svg = document.getElementById("chart-modelos");
+    var W = 900, H = 400;
+    var m = { t: 10, r: 70, b: 34, l: 168 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var xMax = 1.0;
+    var band = ih / MODELOS.length;
+    var bh = Math.min(26, band - 8);
+    function X(v) { return m.l + (v / xMax) * iw; }
+
+    [0, 0.25, 0.5, 0.75, 1.0].forEach(function (v) {
+      svg.appendChild(el("line", { x1: X(v), x2: X(v), y1: m.t, y2: m.t + ih,
+        stroke: COL.ruleSoft, "stroke-width": 1 }));
+      var t = el("text", { x: X(v), y: m.t + ih + 20, "text-anchor": "middle",
+        "font-size": 10, fill: COL.ink3 });
+      t.textContent = v.toFixed(2).replace(".", ",");
+      svg.appendChild(t);
+    });
+
+    MODELOS.forEach(function (d, i) {
+      var y = m.t + i * band + (band - bh) / 2;
+      var w = X(d.v) - m.l;
+      var fill = d.win ? COL.accent : (d.base ? COL.ref : COL.accent);
+      var op = d.win ? 1 : (d.base ? 1 : 0.42);
+
+      var bar = el("rect", { x: m.l, y: y, width: Math.max(w, 2), height: bh,
+        rx: 3, fill: fill, opacity: op });
+      svg.appendChild(bar);
+
+      var name = el("text", { x: m.l - 14, y: y + bh / 2 + 4, "text-anchor": "end",
+        "font-size": 11.5, fill: d.win ? COL.ink : COL.ink2,
+        "font-weight": d.win ? 500 : 400 });
+      name.textContent = d.n;
+      svg.appendChild(name);
+
+      var val = el("text", { x: X(d.v) + 10, y: y + bh / 2 + 4, "font-size": 11.5,
+        fill: d.win ? COL.ink : COL.ink2, "font-weight": d.win ? 500 : 400 });
+      val.textContent = d.v.toFixed(3).replace(".", ",");
+      svg.appendChild(val);
+
+      var hit = el("rect", { x: m.l, y: m.t + i * band, width: iw, height: band,
+        fill: "transparent" });
+      hoverable(hit, "<b>" + d.n + "</b><br>MAP@7 " + d.v.toFixed(3).replace(".", ",") +
+        "<br>" + (d.v / 0.643).toFixed(2).replace(".", ",") + "&times; la popularidad");
+      svg.appendChild(hit);
+    });
+  })();
+
+  /* =========================================================
+     4. MEJORA CONTRA RUIDO
+     ========================================================= */
+  (function drawRuido() {
+    var svg = document.getElementById("chart-ruido");
+    var W = 440, H = 200;
+    /* Los rotulos van ENCIMA de cada barra, no a la izquierda: con dos etiquetas de
+       veinte caracteres, un margen izquierdo que las acogiera se comeria la mitad del
+       ancho util, y uno mas estrecho las cortaba por el borde. */
+    var m = { t: 18, r: 80, l: 18 };
+    var iw = W - m.l - m.r;
+    var datos = [
+      { n: "Mejora del ajuste de hiperparámetros", v: 0.00016, col: COL.accent },
+      { n: "Ruido entre semillas del mismo modelo", v: 0.00092, col: COL.brass }
+    ];
+    var vMax = 0.001;
+    var bh = 26, paso = 74;
+
+    datos.forEach(function (d, i) {
+      var top = m.t + i * paso;
+      var w = (d.v / vMax) * iw;
+
+      var name = el("text", { x: m.l, y: top + 11, "font-size": 11, fill: COL.ink2 });
+      name.textContent = d.n;
+      svg.appendChild(name);
+
+      svg.appendChild(el("rect", { x: m.l, y: top + 20, width: Math.max(w, 2), height: bh,
+        rx: 3, fill: d.col }));
+
+      var val = el("text", { x: m.l + Math.max(w, 2) + 10, y: top + 20 + bh / 2 + 4,
+        "font-size": 12, fill: COL.ink, "font-weight": 500 });
+      val.textContent = "0," + d.v.toFixed(5).slice(2);
+      svg.appendChild(val);
+
+      var hit = el("rect", { x: m.l, y: top, width: W - m.l - 8, height: paso - 10,
+        fill: "transparent" });
+      hoverable(hit, "<b>" + d.n + "</b><br>" + d.v.toFixed(5).replace(".", ",") + " MAP@7");
+      svg.appendChild(hit);
+    });
+
+    var note = el("text", { x: m.l, y: H - 12, "font-size": 10.5, fill: COL.ink3 });
+    note.textContent = "el ruido es 5,8× la mejora";
+    svg.appendChild(note);
+  })();
+
+  /* =========================================================
+     5. LAS DOCE CONFIGURACIONES
+     ========================================================= */
+  var BUSQUEDA = [0.88639, 0.88456, 0.88312, 0.88215, 0.88206, 0.88138,
+                  0.87989, 0.87981, 0.87975, 0.87892, 0.87511, 0.87245];
+
+  (function drawBusqueda() {
+    var svg = document.getElementById("chart-busqueda");
+    var W = 440, H = 200;
+    var m = { t: 46, r: 26, b: 48, l: 26 };
+    var iw = W - m.l - m.r;
+    var lo = 0.870, hi = 0.888;
+    function X(v) { return m.l + ((v - lo) / (hi - lo)) * iw; }
+    var yLine = m.t + 34;
+
+    svg.appendChild(el("line", { x1: m.l, x2: m.l + iw, y1: yLine, y2: yLine,
+      stroke: COL.rule, "stroke-width": 1 }));
+
+    [0.870, 0.875, 0.880, 0.885].forEach(function (v) {
+      svg.appendChild(el("line", { x1: X(v), x2: X(v), y1: yLine - 5, y2: yLine + 5,
+        stroke: COL.rule, "stroke-width": 1 }));
+      var t = el("text", { x: X(v), y: yLine + 22, "text-anchor": "middle",
+        "font-size": 10, fill: COL.ink3 });
+      t.textContent = "0," + v.toFixed(3).slice(2);
+      svg.appendChild(t);
+    });
+
+    BUSQUEDA.forEach(function (v, i) {
+      var best = i === 0;
+      svg.appendChild(el("circle", { cx: X(v), cy: yLine, r: best ? 6.5 : 5,
+        fill: best ? COL.accent : COL.accent, opacity: best ? 1 : 0.4,
+        stroke: COL.surface, "stroke-width": 2 }));
+      var hit = el("circle", { cx: X(v), cy: yLine, r: 13, fill: "transparent" });
+      hoverable(hit, (best ? "<b>configuración elegida</b><br>" : "") +
+        "MAP parada " + v.toFixed(5).replace(".", ","));
+      svg.appendChild(hit);
+    });
+
+    var lblBest = el("text", { x: X(0.88639), y: yLine - 16, "text-anchor": "end",
+      "font-size": 10.5, fill: COL.accent, "font-weight": 500 });
+    lblBest.textContent = "elegida";
+    svg.appendChild(lblBest);
+
+    var rng = el("text", { x: m.l, y: H - 14, "font-size": 10.5, fill: COL.ink3 });
+    rng.textContent = "rango de la búsqueda: 0,014 de MAP";
+    svg.appendChild(rng);
+
+    var cap = el("text", { x: m.l, y: 22, "font-size": 10.5, fill: COL.ink3 });
+    cap.textContent = "12 configuraciones · 9 hiperparámetros";
+    svg.appendChild(cap);
+  })();
+
+  window.addEventListener("scroll", hideTip, { passive: true });
+})();
+</script>
+</body>
+</html>
