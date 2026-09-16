@@ -1,10 +1,10 @@
 {
   "filas_entrada": 13647309,
-  "construccion_y_escritura": 303.35,
+  "construccion_y_escritura": 335.35,
   "filas_salida": 12682421,
   "filas_descartadas": 964888,
   "pct_descartado": 7.07,
-  "comprobaciones": 22.97,
+  "comprobaciones": 25.11,
   "resumen": {
     "altas_totales": 561710.0,
     "bajas_totales": 533228.0,

@@ -58,24 +58,24 @@
   "titular": "Contactando al 5% de la cartera (46,993 clientes) se alcanza el 38.3% de las contrataciones del mes, 7.56x lo que se conseguiria llamando al azar.",
   "matriz_valor_riesgo": {
     "RETENER PRIMERO": {
-      "clientes": 47552,
-      "pct": 5.1
+      "clientes": 43243,
+      "pct": 4.7
     },
     "RETENER": {
-      "clientes": 152289,
-      "pct": 16.4
+      "clientes": 152647,
+      "pct": 16.5
     },
     "NO TOCAR": {
-      "clientes": 584644,
+      "clientes": 584286,
       "pct": 63.1
     },
     "VENDER": {
-      "clientes": 142178,
-      "pct": 15.3
+      "clientes": 146487,
+      "pct": 15.8
     }
   },
   "cortes": {
     "compra": 0.6765105724334717,
-    "fuga": 0.016137862710848085
+    "fuga": 0.01501557632398754
   }
 }

@@ -224,7 +224,46 @@ gasta mejor en otro sitio — más datos, otras variables, otro planteamiento.
 
 ### Caída de negocio
 
-<!-- NUMEROS_CHURN -->
+Segundo modelo, problema distinto: **¿qué cliente va a cancelar qué producto el mes que
+viene?** Binario, y muy desbalanceado — solo el 2,53% de los pares cliente-producto acaban
+en baja.
+
+| Métrica | Valor |
+|---|---|
+| AUC | **0.8835** |
+| Precisión media (AP) | 0.3526 |
+| Tasa base | 0.0253 |
+| **Mejora sobre el azar** | **14,0x** |
+| Brier antes / después de calibrar | 0.02022 → 0.01977 |
+
+Con un desbalance así, la exactitud no sirve de nada: un modelo que diga "nadie se va"
+acierta el 97,5% de las veces. Por eso se reporta **precisión media contra la tasa base**,
+que es la pregunta real — de los clientes que marco como riesgo, ¿cuántos se van de verdad,
+comparado con marcar al azar?
+
+**La variable que más subió el modelo: `tenencia_producto`**, los meses que el cliente lleva
+con *cada* producto concreto. Antes solo existía `meses_observados`, que dice cuánto tiempo
+llevamos viendo al cliente — pero no cuánto lleva con el producto que podría cancelar, que
+es lo que de verdad importa. Añadirla movió el AUC de 0.8659 a 0.8835 y la mejora sobre el
+azar de 10,4x a 14,0x.
+
+Merece la pena comparar ese salto con el capítulo anterior: **una variable bien pensada dio
++0,018 de AUC, mientras que doce configuraciones de hiperparámetros sobre el recomendador
+dieron +0,0002 de MAP.** No suele estar ahí el cuello de botella.
+
+### El umbral no es 0,5
+
+La decisión de a quién llamar no sale de la probabilidad, sale del dinero. Cada contacto
+cuesta, cada baja evitada vale, y el punto óptimo no tiene por qué caer en 0,5 — de hecho
+casi nunca cae ahí.
+
+| Umbral | Contactos | Bajas capturadas | Valor esperado |
+|---|---|---|---|
+| **0,16 (óptimo)** | **45.727** | **14.463 (46,4%)** | **292.033 €** |
+| 0,50 (por inercia) | 4.916 | — | 104.156 € |
+
+Usar el 0,5 que viene por defecto deja **187.877 € sobre la mesa**. No porque el modelo sea
+peor, sino porque 0,5 es un valor que nadie eligió: es el que sale de no decidir.
 
 ### Del modelo al plan comercial
 
@@ -254,10 +293,10 @@ con riesgo de fuga da cuatro cuadrantes, y a cada uno le corresponde una acción
 
 | Cuadrante | Clientes | Qué se hace |
 |---|---|---|
-| NO TOCAR | 584.644 (63,1%) | no gastar contacto este mes |
-| RETENER | 152.289 (16,4%) | campaña de retención |
-| VENDER | 142.178 (15,3%) | ofrecerle el siguiente producto |
-| RETENER PRIMERO | 47.552 (5,1%) | retener antes de intentar venderle nada |
+| NO TOCAR | 584.286 (63,1%) | no gastar contacto este mes |
+| RETENER | 152.647 (16,5%) | campaña de retención |
+| VENDER | 146.487 (15,8%) | ofrecerle el siguiente producto |
+| RETENER PRIMERO | 43.243 (4,7%) | retener antes de intentar venderle nada |
 
 El corte se hace por **percentil 80**, no por el 0,5 de probabilidad que sale por defecto.
 Partiendo por la mediana, el 75% de la cartera quedaba marcada como riesgo alto — y una

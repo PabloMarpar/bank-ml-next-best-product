@@ -10,277 +10,271 @@
   "filas_validacion": 1233818,
   "tasa_base_bajas": 0.02527,
   "meses_entrenamiento": 6,
-  "entrenamiento_gbt": 703.43,
-  "prediccion": 50.42,
-  "auc": 0.8659,
-  "precision_media": 0.2623,
-  "mejora_sobre_tasa_base": 10.4,
+  "entrenamiento_gbt": 599.92,
+  "prediccion": 51.79,
+  "auc": 0.8835,
+  "precision_media": 0.3526,
+  "mejora_sobre_tasa_base": 14.0,
   "calibracion": {
-    "brier_crudo": 0.021766,
-    "brier_calibrado": 0.021295,
-    "mejora_brier_pct": 2.17,
-    "auc_antes": 0.8659,
-    "auc_despues": 0.8661,
+    "brier_crudo": 0.020224,
+    "brier_calibrado": 0.019772,
+    "mejora_brier_pct": 2.24,
+    "auc_antes": 0.8835,
+    "auc_despues": 0.8838,
     "fiabilidad_cruda": [
       {
         "tramo": "0.0-0.1",
-        "n": 1150405,
-        "prometido": 0.0352,
-        "observado": 0.0131
+        "n": 1156809,
+        "prometido": 0.034,
+        "observado": 0.0116
       },
       {
         "tramo": "0.1-0.2",
-        "n": 52349,
-        "prometido": 0.141,
-        "observado": 0.1227
+        "n": 48228,
+        "prometido": 0.1365,
+        "observado": 0.1266
       },
       {
         "tramo": "0.2-0.3",
-        "n": 23331,
-        "prometido": 0.241,
-        "observado": 0.2531
+        "n": 13993,
+        "prometido": 0.2405,
+        "observado": 0.2681
       },
       {
         "tramo": "0.3-0.4",
-        "n": 5660,
-        "prometido": 0.3341,
-        "observado": 0.3809
+        "n": 4560,
+        "prometido": 0.3397,
+        "observado": 0.3743
       },
       {
         "tramo": "0.4-0.5",
-        "n": 412,
-        "prometido": 0.435,
-        "observado": 0.5898
+        "n": 3911,
+        "prometido": 0.4534,
+        "observado": 0.4776
       },
       {
         "tramo": "0.5-0.6",
-        "n": 653,
-        "prometido": 0.5511,
-        "observado": 0.827
+        "n": 3339,
+        "prometido": 0.5488,
+        "observado": 0.5553
       },
       {
         "tramo": "0.6-0.7",
-        "n": 482,
-        "prometido": 0.6448,
-        "observado": 0.8237
+        "n": 1842,
+        "prometido": 0.6426,
+        "observado": 0.7459
       },
       {
         "tramo": "0.7-0.8",
-        "n": 168,
-        "prometido": 0.7639,
-        "observado": 0.8869
+        "n": 564,
+        "prometido": 0.7724,
+        "observado": 0.9521
       },
       {
         "tramo": "0.8-0.9",
-        "n": 260,
-        "prometido": 0.8552,
-        "observado": 0.9346
+        "n": 566,
+        "prometido": 0.8263,
+        "observado": 0.9788
       },
       {
         "tramo": "0.9-1.0",
-        "n": 98,
-        "prometido": 0.9184,
+        "n": 6,
+        "prometido": 0.9038,
         "observado": 1.0
       }
     ],
     "fiabilidad_calibrada": [
       {
         "tramo": "0.0-0.1",
-        "n": 1149362,
-        "prometido": 0.0128,
-        "observado": 0.013
+        "n": 1156289,
+        "prometido": 0.0113,
+        "observado": 0.0116
       },
       {
         "tramo": "0.1-0.2",
-        "n": 55001,
-        "prometido": 0.1614,
-        "observado": 0.1243
+        "n": 39941,
+        "prometido": 0.141,
+        "observado": 0.1164
       },
       {
         "tramo": "0.2-0.3",
-        "n": 15041,
-        "prometido": 0.2313,
-        "observado": 0.2397
+        "n": 18496,
+        "prometido": 0.2478,
+        "observado": 0.2076
       },
       {
         "tramo": "0.3-0.4",
-        "n": 11620,
-        "prometido": 0.3273,
-        "observado": 0.3311
+        "n": 8382,
+        "prometido": 0.3512,
+        "observado": 0.3487
       },
       {
         "tramo": "0.4-0.5",
-        "n": 762,
-        "prometido": 0.4182,
-        "observado": 0.4186
+        "n": 5794,
+        "prometido": 0.4344,
+        "observado": 0.4883
       },
       {
         "tramo": "0.5-0.6",
-        "n": 362,
-        "prometido": 0.5353,
-        "observado": 0.616
+        "n": 2100,
+        "prometido": 0.5058,
+        "observado": 0.5738
       },
       {
         "tramo": "0.6-0.7",
-        "n": 854,
-        "prometido": 0.6664,
-        "observado": 0.8326
+        "n": 734,
+        "prometido": 0.6589,
+        "observado": 0.7234
       },
       {
         "tramo": "0.7-0.8",
-        "n": 336,
-        "prometido": 0.7359,
-        "observado": 0.7946
+        "n": 1189,
+        "prometido": 0.7216,
+        "observado": 0.8124
       },
       {
         "tramo": "0.8-0.9",
-        "n": 188,
-        "prometido": 0.8634,
-        "observado": 0.9043
-      },
-      {
-        "tramo": "0.9-1.0",
-        "n": 292,
-        "prometido": 0.9842,
-        "observado": 0.9726
+        "n": 893,
+        "prometido": 0.8228,
+        "observado": 0.9787
       }
     ],
-    "escalones_isotonica": 156,
+    "escalones_isotonica": 136,
     "deriva_auc": 0.0002
   },
-  "busqueda_umbral": 5.98,
+  "busqueda_umbral": 5.24,
   "umbral_sin_calibrar": {
-    "umbral": 0.19,
-    "contactados": 35244,
-    "bajas_capturadas": 10398,
-    "beneficio_estimado": 198108.0
+    "umbral": 0.15,
+    "contactados": 45584,
+    "bajas_capturadas": 14436,
+    "beneficio_estimado": 291776.0
   },
   "umbral_elegido": {
-    "umbral": 0.19,
-    "contactados": 33566,
-    "bajas_capturadas": 10161,
-    "beneficio_estimado": 197966.0
+    "umbral": 0.16,
+    "contactados": 45727,
+    "bajas_capturadas": 14463,
+    "beneficio_estimado": 292033.0
   },
   "curva_umbral": [
     {
       "umbral": 0.01,
-      "contactados": 819461,
-      "bajas_capturadas": 30345,
-      "beneficio_estimado": -3004885.0
+      "contactados": 799225,
+      "bajas_capturadas": 30305,
+      "beneficio_estimado": -2905145.0
     },
     {
       "umbral": 0.06,
-      "contactados": 124965,
-      "bajas_capturadas": 18836,
-      "beneficio_estimado": 53271.0
+      "contactados": 116681,
+      "bajas_capturadas": 20194,
+      "beneficio_estimado": 143579.0
     },
     {
       "umbral": 0.11,
-      "contactados": 83266,
-      "bajas_capturadas": 16142,
-      "beneficio_estimado": 164782.0
+      "contactados": 77528,
+      "bajas_capturadas": 17817,
+      "beneficio_estimado": 253772.0
     },
     {
       "umbral": 0.16,
-      "contactados": 66474,
-      "bajas_capturadas": 14573,
-      "beneficio_estimado": 192258.0
+      "contactados": 45727,
+      "bajas_capturadas": 14463,
+      "beneficio_estimado": 292033.0
     },
     {
       "umbral": 0.21,
-      "contactados": 29455,
-      "bajas_capturadas": 9426,
-      "beneficio_estimado": 192061.0
+      "contactados": 37185,
+      "bajas_capturadas": 13108,
+      "beneficio_estimado": 285963.0
     },
     {
       "umbral": 0.26,
-      "contactados": 16108,
-      "bajas_capturadas": 6243,
-      "beneficio_estimado": 144208.0
+      "contactados": 23752,
+      "bajas_capturadas": 10652,
+      "beneficio_estimado": 264712.0
     },
     {
       "umbral": 0.31,
-      "contactados": 14414,
-      "bajas_capturadas": 5821,
-      "beneficio_estimado": 137486.0
+      "contactados": 16705,
+      "bajas_capturadas": 8596,
+      "beneficio_estimado": 225931.0
     },
     {
       "umbral": 0.36,
-      "contactados": 4505,
-      "bajas_capturadas": 2733,
-      "beneficio_estimado": 75863.0
+      "contactados": 16088,
+      "bajas_capturadas": 8373,
+      "beneficio_estimado": 220988.0
     },
     {
       "umbral": 0.41,
-      "contactados": 2794,
-      "bajas_capturadas": 1974,
-      "beneficio_estimado": 57094.0
+      "contactados": 10706,
+      "bajas_capturadas": 6404,
+      "beneficio_estimado": 177014.0
     },
     {
       "umbral": 0.46,
-      "contactados": 2036,
-      "bajas_capturadas": 1657,
-      "beneficio_estimado": 49472.0
+      "contactados": 6066,
+      "bajas_capturadas": 4211,
+      "beneficio_estimado": 121266.0
     },
     {
       "umbral": 0.51,
-      "contactados": 2012,
-      "bajas_capturadas": 1644,
-      "beneficio_estimado": 49124.0
+      "contactados": 2894,
+      "bajas_capturadas": 2423,
+      "beneficio_estimado": 72758.0
     },
     {
       "umbral": 0.56,
-      "contactados": 1671,
-      "bajas_capturadas": 1432,
-      "beneficio_estimado": 43197.0
+      "contactados": 2816,
+      "bajas_capturadas": 2371,
+      "beneficio_estimado": 71276.0
     },
     {
       "umbral": 0.61,
-      "contactados": 1670,
-      "bajas_capturadas": 1432,
-      "beneficio_estimado": 43202.0
+      "contactados": 2816,
+      "bajas_capturadas": 2371,
+      "beneficio_estimado": 71276.0
     },
     {
       "umbral": 0.66,
-      "contactados": 1639,
-      "bajas_capturadas": 1415,
-      "beneficio_estimado": 42745.0
+      "contactados": 2722,
+      "bajas_capturadas": 2302,
+      "beneficio_estimado": 69262.0
     },
     {
       "umbral": 0.71,
-      "contactados": 699,
-      "bajas_capturadas": 624,
-      "beneficio_estimado": 18969.0
+      "contactados": 2082,
+      "bajas_capturadas": 1840,
+      "beneficio_estimado": 55830.0
     },
     {
       "umbral": 0.76,
-      "contactados": 644,
-      "bajas_capturadas": 585,
-      "beneficio_estimado": 17840.0
+      "contactados": 925,
+      "bajas_capturadas": 904,
+      "beneficio_estimado": 27919.0
     },
     {
       "umbral": 0.81,
-      "contactados": 480,
-      "bajas_capturadas": 454,
-      "beneficio_estimado": 13944.0
+      "contactados": 893,
+      "bajas_capturadas": 874,
+      "beneficio_estimado": 26999.0
     },
     {
       "umbral": 0.86,
-      "contactados": 371,
-      "bajas_capturadas": 353,
-      "beneficio_estimado": 10853.0
+      "contactados": 0,
+      "bajas_capturadas": 0,
+      "beneficio_estimado": 0.0
     },
     {
       "umbral": 0.91,
-      "contactados": 292,
-      "bajas_capturadas": 284,
-      "beneficio_estimado": 8764.0
+      "contactados": 0,
+      "bajas_capturadas": 0,
+      "beneficio_estimado": 0.0
     },
     {
       "umbral": 0.96,
-      "contactados": 266,
-      "bajas_capturadas": 261,
-      "beneficio_estimado": 8066.0
+      "contactados": 0,
+      "bajas_capturadas": 0,
+      "beneficio_estimado": 0.0
     }
   ],
   "campana_rentable": true
