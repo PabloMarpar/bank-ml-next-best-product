@@ -212,6 +212,11 @@ desviación de **0.00092**.
 
 La mejora es **cinco veces menor que el ruido de inicialización**. No es una mejora.
 
+Por si hiciera falta rematarlo: el modelo que finalmente se despliega, entrenado con la
+configuración ganadora pero con otra semilla, saca **0.90179**. La misma configuración,
+el mismo código, los mismos datos — 0.0014 de diferencia solo por el número con el que se
+inicializan los pesos. Nueve veces la ganancia de toda la optimización.
+
 Esto es lo que aporta medir la varianza entre semillas: sin ese número, +0.00016 se publica
 como "la optimización mejoró el modelo" y es falso. Con él, la conclusión es que el modelo
 ya estaba en su techo para esta familia de arquitecturas, y que el siguiente esfuerzo se
@@ -223,7 +228,40 @@ gasta mejor en otro sitio — más datos, otras variables, otro planteamiento.
 
 ### Del modelo al plan comercial
 
-<!-- NUMEROS_NEGOCIO -->
+Un modelo con buen MAP no es todavía un plan. La pregunta del equipo comercial es
+**"tengo presupuesto para N llamadas este mes, ¿a quién llamo?"**, y eso se responde con una
+curva de captura: se ordena la cartera entera por propensión y se mira qué fracción de las
+contrataciones reales cae dentro de cada tramo.
+
+| Llamas al… | Clientes | Capturas… | vs llamar al azar |
+|---|---|---|---|
+| 1% de la cartera | 9.399 | **17,0%** de las contrataciones | **15,8x** |
+| 2% | 18.797 | 25,5% | 12,4x |
+| **5%** | **46.993** | **38,3%** | **7,6x** |
+| 10% | 93.986 | 48,9% | 4,9x |
+| 20% | 185.826 | 57,7% | 2,9x |
+| 50% | 463.715 | 81,8% | 1,6x |
+
+**Contactando al 5% de la cartera se alcanza el 38,3% de las contrataciones del mes, 7,6
+veces lo que se conseguiría llamando al azar.**
+
+La curva se calcula sobre los **926.663 clientes** del mes, no sobre los 27.875 que
+contrataron. Esa distinción es la que hace que el número signifique algo: si solo puntúas a
+quien iba a comprar, "capturas el 38% llamando al 5%" no quiere decir nada.
+
+Y luego está la decisión que no es del modelo sino del negocio: cruzar propensión de compra
+con riesgo de fuga da cuatro cuadrantes, y a cada uno le corresponde una acción distinta.
+
+| Cuadrante | Clientes | Qué se hace |
+|---|---|---|
+| NO TOCAR | 584.644 (63,1%) | no gastar contacto este mes |
+| RETENER | 152.289 (16,4%) | campaña de retención |
+| VENDER | 142.178 (15,3%) | ofrecerle el siguiente producto |
+| RETENER PRIMERO | 47.552 (5,1%) | retener antes de intentar venderle nada |
+
+El corte se hace por **percentil 80**, no por el 0,5 de probabilidad que sale por defecto.
+Partiendo por la mediana, el 75% de la cartera quedaba marcada como riesgo alto — y una
+lista con el 75% de los clientes no es un plan de acción, es la guía de teléfonos.
 
 ---
 

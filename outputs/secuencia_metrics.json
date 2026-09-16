@@ -1,105 +1,71 @@
 {
   "mes_validacion": "2016-05-28",
-  "largo_secuencia": 12,
-  "epocas": 10,
-  "dim": 64,
-  "preparacion_spark": 452.04,
+  "largo_secuencia": 16,
+  "epocas": 20,
+  "dim": 128,
+  "capas": 1,
+  "cabezas": 4,
+  "dropout": 0.1,
+  "weight_decay": 0.0001,
+  "atar_pesos": false,
+  "supervision": "todas",
+  "semilla": 42,
+  "preparacion_spark": 448.8,
+  "conversion_numpy": 29.61,
   "ejemplos_entrenamiento": 492905,
   "clientes_parada": 26736,
   "clientes_validacion": 27875,
-  "conversion_numpy": 27.49,
-  "memoria_secuencias_mb": 406.1,
-  "gru_historial_perdida": [
-    {
-      "perdida": 1.18561,
-      "map_parada": 0.8772
-    },
-    {
-      "perdida": 1.07701,
-      "map_parada": 0.88107
-    },
-    {
-      "perdida": 1.0592,
-      "map_parada": 0.88053
-    },
-    {
-      "perdida": 1.04806,
-      "map_parada": 0.88311
-    },
-    {
-      "perdida": 1.04078,
-      "map_parada": 0.88563
-    },
-    {
-      "perdida": 1.03425,
-      "map_parada": 0.88495
-    },
-    {
-      "perdida": 1.03018,
-      "map_parada": 0.88632
-    },
-    {
-      "perdida": 1.026,
-      "map_parada": 0.88659
-    },
-    {
-      "perdida": 1.02367,
-      "map_parada": 0.88674
-    },
-    {
-      "perdida": 1.02173,
-      "map_parada": 0.88658
-    }
-  ],
-  "gru_segundos": 268.4,
+  "memoria_secuencias_mb": 541.5,
   "transformer_historial_perdida": [
     {
-      "perdida": 1.15503,
-      "map_parada": 0.87568
+      "perdida": 1.19129,
+      "perdida_aux": 0.04483,
+      "map_parada": 0.88092
     },
     {
-      "perdida": 1.08006,
-      "map_parada": 0.88005
+      "perdida": 1.06978,
+      "perdida_aux": 0.02623,
+      "map_parada": 0.88143
     },
     {
-      "perdida": 1.06667,
-      "map_parada": 0.88227
+      "perdida": 1.05808,
+      "perdida_aux": 0.0258,
+      "map_parada": 0.8847
     },
     {
-      "perdida": 1.0579,
-      "map_parada": 0.8836
+      "perdida": 1.04957,
+      "perdida_aux": 0.02552,
+      "map_parada": 0.88431
     },
     {
-      "perdida": 1.05032,
-      "map_parada": 0.88524
+      "perdida": 1.04419,
+      "perdida_aux": 0.02532,
+      "map_parada": 0.88684
     },
     {
-      "perdida": 1.04375,
-      "map_parada": 0.88599
+      "perdida": 1.03921,
+      "perdida_aux": 0.02517,
+      "map_parada": 0.88791
     },
     {
-      "perdida": 1.03733,
-      "map_parada": 0.88608
+      "perdida": 1.03411,
+      "perdida_aux": 0.02506,
+      "map_parada": 0.8858
     },
     {
-      "perdida": 1.03215,
-      "map_parada": 0.88754
-    },
-    {
-      "perdida": 1.02814,
-      "map_parada": 0.88714
-    },
-    {
-      "perdida": 1.0251,
-      "map_parada": 0.88773
+      "perdida": 1.03022,
+      "perdida_aux": 0.02497,
+      "map_parada": 0.88659
     }
   ],
-  "transformer_segundos": 739.3,
+  "transformer_segundos": 1104.2,
   "map7": {
-    "gru": 0.90157,
-    "transformer": 0.90299
+    "transformer": 0.90179
   },
-  "aporte_secuencia": 0.04211,
-  "aporte_secuencia_pct": 4.89,
-  "veredicto_secuencia": "El orden de la trayectoria SI aporta sobre el estado actual."
+  "aporte_secuencia": 0.04091,
+  "aporte_secuencia_pct": 4.75,
+  "veredicto_secuencia": "El orden de la trayectoria SI aporta sobre el estado actual.",
+  "exportar_prob_compra": 334.88,
+  "modelo_exportado": "transformer",
+  "clientes_exportados": 926663
 }
