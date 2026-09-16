@@ -74,14 +74,44 @@ hace trampas a propósito, solo para demostrar lo grande que es el salto y que a
 
 ## El resultado
 
-<!-- Se rellena al ejecutar sobre el dataset completo (src/business.py lo calcula). -->
-*Pendiente de ejecutar sobre los datos reales.*
+**Contactando al 5% de la cartera se alcanza el 38,3% de las contrataciones del mes: 7,6
+veces lo que se conseguiría llamando al azar.**
 
-La frase será de esta forma: **"contactando al X% de la cartera se alcanza el Y% de las
-contrataciones del mes, frente al X% que se conseguiría llamando al azar"**.
+En número de personas: llamando a 46.993 clientes de los 926.663 que hay, se llega a más de
+un tercio de todos los que iban a contratar algo ese mes. Si esas mismas 46.993 llamadas se
+reparten al azar, se llega al 5%.
+
+Y si el presupuesto da para menos, la ventaja es todavía mayor: llamando solo al 1% se
+alcanza el 17% de las contrataciones, casi **16 veces** el azar. Cuanto más escaso es el
+tiempo del equipo comercial, más vale ordenar bien la lista.
+
+Por el lado de las bajas, el modelo detecta 14 veces mejor que el azar quién va a cancelar.
+Y el punto de corte — a partir de qué nivel de riesgo merece la pena llamar — no se deja en
+el 0,5 que viene por defecto, sino que se calcula con lo que cuesta un contacto y lo que
+vale retener a alguien. Esa diferencia sola vale **187.877 €** en el mes medido.
 
 Ese multiplicador es todo el valor del sistema, y es una cifra que un director comercial
 entiende sin que nadie le explique qué es un árbol de decisión.
+
+## Una cosa que salió mal, y que cuenta más que las que salieron bien
+
+Al final del proyecto se intentó exprimir el mejor modelo: probar 12 combinaciones de
+ajustes, cambiar cómo aprende, añadir técnicas que suelen funcionar. El resultado mejoró un
+**0,02%**.
+
+Antes de cantar victoria se hizo una comprobación que mucha gente se salta: entrenar el
+**mismo** modelo tres veces cambiando solo el número aleatorio con el que arranca. Esas tres
+versiones idénticas se diferenciaron entre sí **cinco veces más** que lo que había mejorado
+el ajuste.
+
+Traducido: la mejora no existía. Era ruido.
+
+Lo que sí funcionó fue mucho más simple — añadir una variable en la que nadie había pensado:
+cuántos meses lleva el cliente con *ese* producto concreto. Eso solo mejoró la detección de
+bajas un 1,8%, noventa veces más que toda la optimización.
+
+Saberlo distinguir es la diferencia entre un informe honesto y uno que promete algo que no
+va a pasar cuando el sistema entre en producción.
 
 ## Lo que este proyecto **no** hace
 

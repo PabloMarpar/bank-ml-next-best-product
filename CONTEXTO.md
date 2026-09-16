@@ -13,22 +13,48 @@ un equipo comercial el mes que viene, qué producto ofrecerle a cada uno, y a cu
 punto de perder. Construido en PySpark sobre 13,6M de filas reales (Santander Product
 Recommendation, Kaggle). Corre en Docker porque la máquina no tiene Java.
 
-## ⚠️ AL RETOMAR: qué hay en vuelo ahora mismo
+## AL RETOMAR: el proyecto está terminado en lo técnico
 
-**Sesión del 2026-09-15/16.** La cuarta tanda terminó con los dos veredictos que faltaban,
-y ahora mismo está corriendo **`src/tuning.py`** (búsqueda de hiperparámetros del
-Transformer, ~2 h, lanzada a las 22:40 hora del contenedor).
+**Sesión autónoma del 2026-09-15/16.** Todo el pipeline está ejecutado sobre datos reales, el
+README no tiene huecos, y el repo está en GitHub. Lo que queda es decisión del usuario, no
+trabajo técnico (ver "Lo que falta" al final de esta sección).
 
-```bash
-# El comando exacto que está corriendo
-MSYS_NO_PATHCONV=1 docker compose run --rm -e PYTHONPATH=/app/src spark \
-  python -u src/tuning.py --mes-validacion 2016-05-28 --arquitectura transformer \
-  --configuraciones 12 --epocas-busqueda 8 --epocas-final 20 --fraccion-busqueda 0.4 \
-  --semillas-finales 3 --supervision todas > logs/tuning.log 2>&1
-```
+### Los titulares finales
 
-Escribe `outputs/tuning_metrics.json`. Si al retomar ese fichero existe, la búsqueda
-terminó y el siguiente paso es leerlo.
+| | Valor |
+|---|---|
+| **Recomendación** | Transformer causal, MAP@7 **0.90179** (desplegado) / 0.90315 (mejor semilla) |
+| **Bajas** | AUC **0.8835**, **14,0x** sobre el azar |
+| **Plan comercial** | Contactando al **5%** de la cartera se captura el **38,3%** de las contrataciones, **7,6x** el azar |
+| **Umbral de retención** | 0,16 en vez de 0,50 → **292.033 €** frente a 104.156 € |
+
+El titular de negocio era 16,4% y 3,22x hasta esta sesión. Se multiplicó por dos al conectar
+por fin el Transformer con la capa de negocio (antes corría sobre XGBoost) y al enmascarar
+los productos ya poseídos al calcular `prob_compra`.
+
+### Los cuatro hallazgos que valen para una entrevista
+
+1. **Dos bugs de early stopping.** Uno era una fuga latente que nunca llegó a ejecutarse
+   (detectada antes de contaminar nada). El otro era peor: la métrica de parada devolvía
+   siempre 0.0, así que el entrenamiento **se cortaba en la época 1** y parecía normal.
+2. **El tuning no sirvió de nada, y se puede demostrar.** 12 configuraciones sobre 9
+   hiperparámetros mejoraron +0.00016 de MAP. La desviación entre 3 semillas del MISMO
+   modelo fue 0.00092. La mejora está cinco veces por debajo del ruido.
+3. **Lo que sí funcionó fue una variable.** `tenencia_producto` subió el AUC de bajas de
+   0.8659 a 0.8835 (+0,018). Noventa veces más que toda la optimización de hiperparámetros.
+4. **Cuatro enfoques probados y descartados con datos**: ALS solo, ensemble, learning-to-rank
+   y router por segmento. Ninguno se queda, y todos se reportan.
+
+### Lo que falta (decisiones, no código)
+
+1. **Pasar el repo a público.** Está en `PabloMarpar/bank-ml-next-best-product`, privado. Se
+   acordó pasarlo a público al terminar: `gh repo edit --visibility public --accept-visibility-change-consequences`
+2. **Card en el portfolio.** `pablomarpar.github.io/index.html`, patrón de card en las líneas
+   645-661 (`<article class="card reveal">` con badge, h3, card-desc, chart-wrap con PNG en
+   base64, chip-row y card-footer). La imagen natural es `outputs/curva_captura.png`. **Debe
+   hacerse DESPUÉS de pasar el repo a público**, o el enlace de la card estará roto.
+3. Opcional: desplegar la demo de Streamlit (`app/streamlit_app.py` + `app/demo_data.parquet`,
+   4.000 clientes, 103 KB, ya generado y versionado).
 
 ### Resultado de la búsqueda de hiperparámetros (`tuning.py`)
 
@@ -192,19 +218,21 @@ en t-1 y se aplica a ciegas en t.
 | 3c — Ensemble (`ensemble.py`) | ✅ re-ejecutado sobre los `.npz` nuevos: **NO aporta** (−0.00006) |
 | 3d — Learning to rank (`ranker.py`) | ✅ ejecutado: NO mejora sobre el clasificador |
 | 3e — Router por segmento (`router.py`) | ✅ ejecutado por fin: **+0,06%**, no compensa mantener varios modelos |
-| 4 — Bajas (`churn.py`) | ✅ ejecutado y optimizado; **falta re-ejecutar con `tenencia_producto`** |
-| 5 — Negocio (`business.py`) | ⚠️ parcialmente al día: **ya re-ejecutado con el umbral 0.80** (matriz sana: 6,1 / 63,8 / 15,4 / 14,7%). Lo que sigue pendiente es la **fuente**: lee `prob_compra` de XGBoost, no del Transformer |
+| 4 — Bajas (`churn.py`) | ✅ re-ejecutado con `tenencia_producto`: AUC **0.8835**, **14,0x** sobre el azar |
+| 5 — Negocio (`business.py`) | ✅ al día y sobre el Transformer: **38,3% al 5% de cartera, 7,56x** |
 | 6 — Rendimiento (`perf.py`) | ✅ ejecutado, `PERFORMANCE.md` escrito con los 7 experimentos |
 | Análisis: renta ausente | ✅ ejecutado (`analisis_renta.py`) |
 | Análisis: deriva temporal | ✅ ejecutado (`deriva.py`) |
 | Análisis: cold start | ✅ ejecutado (`cold_start.py`) — sin el Transformer, solo XGBoost |
 | 7 — SageMaker | ✅ escrito (no ejecutado en AWS, declarado así) |
-| 8 — Demo Streamlit | ⏳ código escrito, **falta generar `demo_data.parquet`** |
-| 8 — README.md | ✅ escrito, con **huecos de cifras pendientes de rellenar** (marcados `<!-- ... -->`) |
+| 8 — Demo Streamlit | ✅ `app/demo_data.parquet` generado (4.000 clientes, 103 KB) y versionado |
+| 8 — README.md | ✅ **sin huecos**: sección de resultados reescrita con los 8 enfoques |
 | Card en el portfolio | ⏳ pendiente |
 | Pasar el repo a público | ⏳ pendiente, acordado hacerlo **al terminar** el proyecto |
 | Repo en GitHub | ✅ **subido**: `PabloMarpar/bank-ml-next-best-product`, PRIVADO, rama `main` |
-| 3f — Tuning (`tuning.py`) | 🔄 **corriendo ahora** (~2 h): búsqueda aleatoria de 12 configuraciones |
+| 3f — Tuning (`tuning.py`) | ✅ 12 configuraciones + 3 semillas: **la mejora queda bajo el ruido** |
+| Puente red → negocio | ✅ `secuencia.py --exportar-parquet` puntúa los 926.663 clientes |
+| `RESUMEN.md` | ✅ actualizado con los resultados finales |
 | `CLAUDE.md` | ✅ **nuevo**: lo carga Claude Code solo al abrir sesión; importa `CONTEXTO.md` con `@` |
 
 ## Entorno y cómo se ejecuta
@@ -272,36 +300,68 @@ tienen algún positivo, y el muestreo de negativos le quita contexto.
 aporta tan poco que tampoco se queda (router). Eso es parte del resultado, no un fracaso:
 la alternativa habría sido montar una arquitectura de cuatro modelos para ganar 0,06%.
 
-### Caída de negocio (`churn.py`)
+### Caída de negocio (`churn.py`) — ya con `tenencia_producto`
 
-| Métrica | Valor |
-|---|---|
-| AUC | 0.866 |
-| Precisión media (AP) | 0.262 (tasa base: 0.025) |
-| Mejora sobre el azar | **10,4x** |
-| Brier antes/después de calibrar | 0.02177 → 0.02130 (+2,2%) |
+| Métrica | Antes | **Ahora** |
+|---|---|---|
+| AUC | 0.8659 | **0.8835** |
+| Precisión media (AP) | 0.262 | **0.3526** (tasa base 0.0253) |
+| Mejora sobre el azar | 10,4x | **14,0x** |
+| Brier antes/después de calibrar | — | 0.02022 → 0.01977 |
 
-Umbral por valor de negocio (0.19) vs umbral por inercia (0.50):
+La mejora la trae `tenencia_producto`: los meses (de los últimos 6) que el cliente lleva con
+CADA producto. Antes solo existía `meses_observados`, que dice cuánto llevamos viendo al
+cliente pero no cuánto lleva con el producto que podría cancelar.
+
+**Por qué tardó tanto en medirse:** `churn.py` fallaba con `UNRESOLVED_COLUMN` sobre
+`tenencia_ind_ahor_fin_ult1`. La causa no estaba en `churn.py` — la variable se añadió a
+`features.py` pero **`features.py` nunca se volvió a ejecutar**, así que el parquet de
+`data/features` no tenía esas columnas. Dependencia entre fases que no se ve hasta que rompe.
+
+Umbral por valor de negocio (0.16) frente al umbral por inercia (0.50):
 
 | Umbral | Contactos | Bajas capturadas | Valor esperado |
 |---|---|---|---|
-| 0.19 (óptimo) | 33.566 | 32,6% | **197.966 €** |
-| 0.50 (inercia) | 2.032 | — | 49.420 € |
+| **0,16 (óptimo)** | 45.727 | 14.463 (46,4%) | **292.033 €** |
+| 0,50 (inercia) | 4.916 | — | 104.156 € |
 
-**Pendiente:** re-ejecutar `churn.py` con la nueva variable `tenencia_producto` (meses que el
-cliente lleva con CADA producto — la variable más predictiva de bajas, y todavía no se ha
-medido su efecto real porque se añadió a `features.py`/`churn.py` pero no se ha vuelto a
-correr el pipeline con ella).
+Diferencia: **187.877 €** por no dejar el umbral donde viene por defecto.
 
-### Fase de negocio (`business.py`)
+### Fase de negocio (`business.py`) — al día, y con el modelo bueno
 
-**Desactualizada.** La ejecución que hay en `outputs/business_metrics.json` es de ANTES de
-corregir el umbral de la matriz valor×riesgo (se partía por la mediana 0.5, dejando el 75% de
-la cartera marcada como "riesgo alto" — inútil como plan). Se corrigió a percentil 0.80 en el
-código pero no se ha vuelto a ejecutar sobre datos reales. El titular viejo (con XGBoost, antes
-de saber que el Transformer es mejor) era: *"Contactando al 5% de la cartera se alcanza el
-16,4% de las contrataciones, 3,22x lo que se conseguiría al azar."* Hay que rehacer esto con
-el mejor modelo real (Transformer, una vez arreglada su fuga) y el umbral 0.80.
+**Titular final:** *Contactando al 5% de la cartera (46.993 clientes) se alcanza el 38,3% de
+las contrataciones del mes, 7,56x lo que se conseguiría llamando al azar.*
+
+Curva de captura completa (sobre los 926.663 clientes del mes, no solo los que compraron):
+
+| % cartera | Clientes | % capturado | Multiplicador |
+|---|---|---|---|
+| 1% | 9.399 | 17,0% | **15,79x** |
+| 2% | 18.797 | 25,5% | 12,40x |
+| **5%** | **46.993** | **38,3%** | **7,56x** |
+| 10% | 93.986 | 48,9% | 4,87x |
+| 20% | 185.826 | 57,7% | 2,88x |
+| 50% | 463.715 | 81,8% | 1,63x |
+
+Matriz valor × riesgo, cortada por percentil 0.80 (no por la mediana):
+
+| Cuadrante | Clientes | % |
+|---|---|---|
+| NO TOCAR | 584.286 | 63,1% |
+| RETENER | 152.647 | 16,5% |
+| VENDER | 146.487 | 15,8% |
+| RETENER PRIMERO | 43.243 | 4,7% |
+
+**De dónde sale el salto desde el 16,4% / 3,22x anterior.** Dos causas, y conviene separarlas:
+
+1. **El modelo.** Antes `prob_compra` venía de XGBoost (MAP 0.861); ahora del Transformer
+   (0.902).
+2. **El enmascarado.** `recommend.py` calculaba `prob_compra` como el máximo de la
+   probabilidad sobre los 24 productos, **incluidos los que el cliente ya tiene**. A mucha
+   gente le asignaba propensión alta por un producto ya contratado. El export nuevo enmascara
+   los poseídos antes de la softmax — y aquí no es opcional: el modelo se entrenó con esa
+   máscara puesta, así que nunca aprendió a bajar ese logit por su cuenta.
+
 
 ### Otros análisis (ejecutados, con resultado)
 
